@@ -1,11 +1,13 @@
 module lab5_master #(
-    parameter ADDR_WIDTH = 32,
-    parameter DATA_WIDTH = 32
+	parameter ADDR_WIDTH = 32,
+	parameter DATA_WIDTH = 32
 ) (
     input wire clk_i,
     input wire rst_i,
 
-    // TODO: æ·»åŠ éœ€è¦çš„æ§åˆ¶ä¿¡å·ï¼Œä¾‹å¦‚æŒ‰é”®å¼€å…³ï¼Ÿ
+    // Ìí¼ÓĞèÒªµÄ¿ØÖÆĞÅºÅ£¬ÀıÈç°´¼ü¿ª¹Ø£¿
+    // control signals
+    input wire [ADDR_WIDTH-1:0] starting_addr,
 
     // wishbone master
     output reg wb_cyc_o,
@@ -18,6 +20,155 @@ module lab5_master #(
     output reg wb_we_o
 );
 
-  // TODO: å®ç°å®éªŒ 5 çš„å†…å­˜+ä¸²å£ Master
+	// ÊµÏÖÊµÑé 5 µÄÄÚ´æ+´®¿Ú Master
+	typedef enum logic [3:0] {
+		IDLE = 0, // ³õÊ¼×´Ì¬
+		READ_WAIT_ACTION = 1, // ÕıÔÚ¶ÁÈ¡×´Ì¬¼Ä´æÆ÷
+		READ_WAIT_CHECK = 2, // ¶ÁÈ¡ÁË×´Ì¬¼Ä´æÆ÷µ±Ç°µÄÈ¡Öµ£¬ÅĞ¶ÏÊÇ·ñ¿ÉÒÔ¶ÁÈ¡ĞÂµÄÖµ
+		READ_DATA_ACTION = 3, // ÕıÔÚ¶ÁÈ¡Êı¾İ¼Ä´æÆ÷
+		READ_DATA_DONE = 4, // Íê³É¶ÁÈ¡Êı¾İ¼Ä´æÆ÷£¬½øÈëÏÂÃæµÄ²Ù×÷
+		WRITE_SRAM_ACTION = 5, // ÕıÔÚĞ´Èë SRAM
+		WRITE_SRAM_DONE = 6, // Ğ´Èë SRAM Íê³É£¬½øÈëÏÂÃæµÄ²Ù×÷
+		WRITE_WAIT_ACTION = 7, // ÕıÔÚ¶ÁÈ¡×´Ì¬¼Ä´æÆ÷
+		WRITE_WAIT_CHECK = 8, // ¶ÁÈ¡ÁË×´Ì¬¼Ä´æÆ÷µ±Ç°µÄÈ¡Öµ£¬ÅĞ¶ÏÊÇ·ñ¿ÉÒÔĞ´ÈëĞÂµÄÖµ
+		WRITE_DATA_ACTION = 9, // ÕıÔÚĞ´ÈëÊı¾İ¼Ä´æÆ÷
+		WRITE_DATA_DONE = 10 // Íê³ÉĞ´ÈëÊı¾İ¼Ä´æÆ÷£¬½øÈëÏÂÃæµÄ²Ù×÷
+	} state_t;
+
+	state_t state, state_n;
+	logic [ADDR_WIDTH-1:0] addr;
+	logic read_ack;
+	logic write_ack;
+	logic [DATA_WIDTH-1:0] dat_i_saved;
+	logic [DATA_WIDTH/4-1:0] recv_byte;
+
+	localparam ADD_ZERO = DATA_WIDTH - DATA_WIDTH/4;
+
+	always_ff @(posedge clk_i or posedge rst_i) begin
+		if (rst_i) begin
+			state <= IDLE;
+			addr <= starting_addr;
+			dat_i_saved <= '0;
+			recv_byte <= '0;
+		end else begin
+			state <= state_n;
+			if (state == WRITE_SRAM_DONE) begin
+				addr <= addr + 4;
+			end
+			if (wb_ack_i) begin
+				dat_i_saved <= wb_dat_i;
+			end
+			if (state == READ_DATA_DONE) begin
+				recv_byte <= dat_i_saved[DATA_WIDTH/4-1:0];
+			end
+		end
+	end
+
+	always_comb begin
+		case (state)
+			IDLE: begin
+				state_n = READ_WAIT_ACTION;
+			end
+			READ_WAIT_ACTION: begin
+				if (wb_ack_i) begin
+					state_n = READ_WAIT_CHECK;
+				end else begin
+					state_n = READ_WAIT_ACTION;
+				end
+			end
+			READ_WAIT_CHECK: begin
+				if (read_ack) begin
+					state_n = READ_DATA_ACTION;
+				end else begin
+					state_n = READ_WAIT_ACTION;
+				end
+			end
+			READ_DATA_ACTION: begin
+				if (wb_ack_i) begin
+					state_n = READ_DATA_DONE;
+				end else begin
+					state_n = READ_DATA_ACTION;
+				end
+			end
+			READ_DATA_DONE: begin
+				state_n = WRITE_SRAM_ACTION;
+			end
+			WRITE_SRAM_ACTION: begin
+				if (wb_ack_i) begin
+					state_n = WRITE_SRAM_DONE;
+				end else begin
+					state_n = WRITE_SRAM_ACTION;
+				end
+			end
+			WRITE_SRAM_DONE: begin
+				state_n = WRITE_WAIT_ACTION;
+			end
+			WRITE_WAIT_ACTION: begin
+				if (wb_ack_i) begin
+					state_n = WRITE_WAIT_CHECK;
+				end else begin
+					state_n = WRITE_WAIT_ACTION;
+				end
+			end
+			WRITE_WAIT_CHECK: begin
+				if (write_ack) begin
+					state_n = WRITE_DATA_ACTION;
+				end else begin
+					state_n = WRITE_WAIT_ACTION;
+				end
+			end
+			WRITE_DATA_ACTION: begin
+				if (wb_ack_i) begin
+					state_n = WRITE_DATA_DONE;
+				end else begin
+					state_n = WRITE_DATA_ACTION;
+				end
+			end
+			WRITE_DATA_DONE: begin
+				state_n = IDLE;
+			end
+			default: begin
+				state_n = IDLE;
+			end
+		endcase
+	end
+
+	assign read_ack = dat_i_saved[8];
+	assign write_ack = dat_i_saved[13];
+	assign wb_cyc_o = wb_stb_o;
+	assign wb_stb_o = (state == READ_WAIT_ACTION || state == READ_DATA_ACTION || state == WRITE_SRAM_ACTION
+		|| state == WRITE_WAIT_ACTION || state == WRITE_DATA_ACTION);
+	assign wb_we_o = (state == WRITE_SRAM_ACTION || state == WRITE_DATA_ACTION);
+	
+	always_comb begin
+		wb_adr_o = '0;
+		wb_dat_o = '0;
+		wb_sel_o = '0;
+		case (state)
+			READ_WAIT_ACTION: begin
+				wb_adr_o = 32'h10000005;
+				wb_sel_o = 4'b0010;
+			end
+			READ_DATA_ACTION: begin
+				wb_adr_o = 32'h10000000;
+				wb_sel_o = 4'b0001;
+			end
+			WRITE_SRAM_ACTION: begin
+				wb_adr_o = addr;
+				wb_dat_o = {{ADD_ZERO{1'b0}}, recv_byte};
+				wb_sel_o = 4'b0001;
+			end
+			WRITE_WAIT_ACTION: begin
+				wb_adr_o = 32'h10000005;
+				wb_sel_o = 4'b0010;
+			end
+			WRITE_DATA_ACTION: begin
+				wb_adr_o = 32'h10000000;
+				wb_dat_o = {{ADD_ZERO{1'b0}}, recv_byte};
+				wb_sel_o = 4'b0001;
+			end
+			default: ;
+		endcase
+	end
 
 endmodule

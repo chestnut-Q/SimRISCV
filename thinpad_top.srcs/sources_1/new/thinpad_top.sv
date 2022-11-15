@@ -1,58 +1,58 @@
 `default_nettype none
 
 module thinpad_top (
-    input wire clk_50M,     // 50MHz æ—¶é’Ÿè¾“å…¥
-    input wire clk_11M0592, // 11.0592MHz æ—¶é’Ÿè¾“å…¥ï¼ˆå¤‡ç”¨ï¼Œå¯ä¸ç”¨ï¼‰
+    input wire clk_50M,     // 50MHz Ê±ÖÓÊäÈë
+    input wire clk_11M0592, // 11.0592MHz Ê±ÖÓÊäÈë£¨±¸ÓÃ£¬¿É²»ÓÃ£©
 
-    input wire push_btn,  // BTN5 æŒ‰é’®å¼€å…³ï¼Œå¸¦æ¶ˆæŠ–ç”µè·¯ï¼ŒæŒ‰ä¸‹æ—¶ä¸º 1
-    input wire reset_btn, // BTN6 å¤ä½æŒ‰é’®ï¼Œå¸¦æ¶ˆæŠ–ç”µè·¯ï¼ŒæŒ‰ä¸‹æ—¶ä¸º 1
+    input wire push_btn,  // BTN5 °´Å¥¿ª¹Ø£¬´øÏû¶¶µçÂ·£¬°´ÏÂÊ±Îª 1
+    input wire reset_btn, // BTN6 ¸´Î»°´Å¥£¬´øÏû¶¶µçÂ·£¬°´ÏÂÊ±Îª 1
 
-    input  wire [ 3:0] touch_btn,  // BTN1~BTN4ï¼ŒæŒ‰é’®å¼€å…³ï¼ŒæŒ‰ä¸‹æ—¶ä¸º 1
-    input  wire [31:0] dip_sw,     // 32 ä½æ‹¨ç å¼€å…³ï¼Œæ‹¨åˆ°â€œONâ€æ—¶ä¸º 1
-    output wire [15:0] leds,       // 16 ä½ LEDï¼Œè¾“å‡ºæ—¶ 1 ç‚¹äº®
-    output wire [ 7:0] dpy0,       // æ•°ç ç®¡ä½ä½ä¿¡å·ï¼ŒåŒ…æ‹¬å°æ•°ç‚¹ï¼Œè¾“å‡º 1 ç‚¹äº®
-    output wire [ 7:0] dpy1,       // æ•°ç ç®¡é«˜ä½ä¿¡å·ï¼ŒåŒ…æ‹¬å°æ•°ç‚¹ï¼Œè¾“å‡º 1 ç‚¹äº®
+    input  wire [ 3:0] touch_btn,  // BTN1~BTN4£¬°´Å¥¿ª¹Ø£¬°´ÏÂÊ±Îª 1
+    input  wire [31:0] dip_sw,     // 32 Î»²¦Âë¿ª¹Ø£¬²¦µ½¡°ON¡±Ê±Îª 1
+    output wire [15:0] leds,       // 16 Î» LED£¬Êä³öÊ± 1 µãÁÁ
+    output wire [ 7:0] dpy0,       // ÊıÂë¹ÜµÍÎ»ĞÅºÅ£¬°üÀ¨Ğ¡Êıµã£¬Êä³ö 1 µãÁÁ
+    output wire [ 7:0] dpy1,       // ÊıÂë¹Ü¸ßÎ»ĞÅºÅ£¬°üÀ¨Ğ¡Êıµã£¬Êä³ö 1 µãÁÁ
 
-    // CPLD ä¸²å£æ§åˆ¶å™¨ä¿¡å·
-    output wire uart_rdn,        // è¯»ä¸²å£ä¿¡å·ï¼Œä½æœ‰æ•ˆ
-    output wire uart_wrn,        // å†™ä¸²å£ä¿¡å·ï¼Œä½æœ‰æ•ˆ
-    input  wire uart_dataready,  // ä¸²å£æ•°æ®å‡†å¤‡å¥½
-    input  wire uart_tbre,       // å‘é€æ•°æ®æ ‡å¿—
-    input  wire uart_tsre,       // æ•°æ®å‘é€å®Œæ¯•æ ‡å¿—
+    // CPLD ´®¿Ú¿ØÖÆÆ÷ĞÅºÅ
+    output wire uart_rdn,        // ¶Á´®¿ÚĞÅºÅ£¬µÍÓĞĞ§
+    output wire uart_wrn,        // Ğ´´®¿ÚĞÅºÅ£¬µÍÓĞĞ§
+    input  wire uart_dataready,  // ´®¿ÚÊı¾İ×¼±¸ºÃ
+    input  wire uart_tbre,       // ·¢ËÍÊı¾İ±êÖ¾
+    input  wire uart_tsre,       // Êı¾İ·¢ËÍÍê±Ï±êÖ¾
 
-    // BaseRAM ä¿¡å·
-    inout wire [31:0] base_ram_data,  // BaseRAM æ•°æ®ï¼Œä½ 8 ä½ä¸ CPLD ä¸²å£æ§åˆ¶å™¨å…±äº«
-    output wire [19:0] base_ram_addr,  // BaseRAM åœ°å€
-    output wire [3:0] base_ram_be_n,  // BaseRAM å­—èŠ‚ä½¿èƒ½ï¼Œä½æœ‰æ•ˆã€‚å¦‚æœä¸ä½¿ç”¨å­—èŠ‚ä½¿èƒ½ï¼Œè¯·ä¿æŒä¸º 0
-    output wire base_ram_ce_n,  // BaseRAM ç‰‡é€‰ï¼Œä½æœ‰æ•ˆ
-    output wire base_ram_oe_n,  // BaseRAM è¯»ä½¿èƒ½ï¼Œä½æœ‰æ•ˆ
-    output wire base_ram_we_n,  // BaseRAM å†™ä½¿èƒ½ï¼Œä½æœ‰æ•ˆ
+    // BaseRAM ĞÅºÅ
+    inout wire [31:0] base_ram_data,  // BaseRAM Êı¾İ£¬µÍ 8 Î»Óë CPLD ´®¿Ú¿ØÖÆÆ÷¹²Ïí
+    output wire [19:0] base_ram_addr,  // BaseRAM µØÖ·
+    output wire [3:0] base_ram_be_n,  // BaseRAM ×Ö½ÚÊ¹ÄÜ£¬µÍÓĞĞ§¡£Èç¹û²»Ê¹ÓÃ×Ö½ÚÊ¹ÄÜ£¬Çë±£³ÖÎª 0
+    output wire base_ram_ce_n,  // BaseRAM Æ¬Ñ¡£¬µÍÓĞĞ§
+    output wire base_ram_oe_n,  // BaseRAM ¶ÁÊ¹ÄÜ£¬µÍÓĞĞ§
+    output wire base_ram_we_n,  // BaseRAM Ğ´Ê¹ÄÜ£¬µÍÓĞĞ§
 
-    // ExtRAM ä¿¡å·
-    inout wire [31:0] ext_ram_data,  // ExtRAM æ•°æ®
-    output wire [19:0] ext_ram_addr,  // ExtRAM åœ°å€
-    output wire [3:0] ext_ram_be_n,  // ExtRAM å­—èŠ‚ä½¿èƒ½ï¼Œä½æœ‰æ•ˆã€‚å¦‚æœä¸ä½¿ç”¨å­—èŠ‚ä½¿èƒ½ï¼Œè¯·ä¿æŒä¸º 0
-    output wire ext_ram_ce_n,  // ExtRAM ç‰‡é€‰ï¼Œä½æœ‰æ•ˆ
-    output wire ext_ram_oe_n,  // ExtRAM è¯»ä½¿èƒ½ï¼Œä½æœ‰æ•ˆ
-    output wire ext_ram_we_n,  // ExtRAM å†™ä½¿èƒ½ï¼Œä½æœ‰æ•ˆ
+    // ExtRAM ĞÅºÅ
+    inout wire [31:0] ext_ram_data,  // ExtRAM Êı¾İ
+    output wire [19:0] ext_ram_addr,  // ExtRAM µØÖ·
+    output wire [3:0] ext_ram_be_n,  // ExtRAM ×Ö½ÚÊ¹ÄÜ£¬µÍÓĞĞ§¡£Èç¹û²»Ê¹ÓÃ×Ö½ÚÊ¹ÄÜ£¬Çë±£³ÖÎª 0
+    output wire ext_ram_ce_n,  // ExtRAM Æ¬Ñ¡£¬µÍÓĞĞ§
+    output wire ext_ram_oe_n,  // ExtRAM ¶ÁÊ¹ÄÜ£¬µÍÓĞĞ§
+    output wire ext_ram_we_n,  // ExtRAM Ğ´Ê¹ÄÜ£¬µÍÓĞĞ§
 
-    // ç›´è¿ä¸²å£ä¿¡å·
-    output wire txd,  // ç›´è¿ä¸²å£å‘é€ç«¯
-    input  wire rxd,  // ç›´è¿ä¸²å£æ¥æ”¶ç«¯
+    // Ö±Á¬´®¿ÚĞÅºÅ
+    output wire txd,  // Ö±Á¬´®¿Ú·¢ËÍ¶Ë
+    input  wire rxd,  // Ö±Á¬´®¿Ú½ÓÊÕ¶Ë
 
-    // Flash å­˜å‚¨å™¨ä¿¡å·ï¼Œå‚è€ƒ JS28F640 èŠ¯ç‰‡æ‰‹å†Œ
-    output wire [22:0] flash_a,  // Flash åœ°å€ï¼Œa0 ä»…åœ¨ 8bit æ¨¡å¼æœ‰æ•ˆï¼Œ16bit æ¨¡å¼æ— æ„ä¹‰
-    inout wire [15:0] flash_d,  // Flash æ•°æ®
-    output wire flash_rp_n,  // Flash å¤ä½ä¿¡å·ï¼Œä½æœ‰æ•ˆ
-    output wire flash_vpen,  // Flash å†™ä¿æŠ¤ä¿¡å·ï¼Œä½ç”µå¹³æ—¶ä¸èƒ½æ“¦é™¤ã€çƒ§å†™
-    output wire flash_ce_n,  // Flash ç‰‡é€‰ä¿¡å·ï¼Œä½æœ‰æ•ˆ
-    output wire flash_oe_n,  // Flash è¯»ä½¿èƒ½ä¿¡å·ï¼Œä½æœ‰æ•ˆ
-    output wire flash_we_n,  // Flash å†™ä½¿èƒ½ä¿¡å·ï¼Œä½æœ‰æ•ˆ
-    output wire flash_byte_n, // Flash 8bit æ¨¡å¼é€‰æ‹©ï¼Œä½æœ‰æ•ˆã€‚åœ¨ä½¿ç”¨ flash çš„ 16 ä½æ¨¡å¼æ—¶è¯·è®¾ä¸º 1
+    // Flash ´æ´¢Æ÷ĞÅºÅ£¬²Î¿¼ JS28F640 Ğ¾Æ¬ÊÖ²á
+    output wire [22:0] flash_a,  // Flash µØÖ·£¬a0 ½öÔÚ 8bit Ä£Ê½ÓĞĞ§£¬16bit Ä£Ê½ÎŞÒâÒå
+    inout wire [15:0] flash_d,  // Flash Êı¾İ
+    output wire flash_rp_n,  // Flash ¸´Î»ĞÅºÅ£¬µÍÓĞĞ§
+    output wire flash_vpen,  // Flash Ğ´±£»¤ĞÅºÅ£¬µÍµçÆ½Ê±²»ÄÜ²Á³ı¡¢ÉÕĞ´
+    output wire flash_ce_n,  // Flash Æ¬Ñ¡ĞÅºÅ£¬µÍÓĞĞ§
+    output wire flash_oe_n,  // Flash ¶ÁÊ¹ÄÜĞÅºÅ£¬µÍÓĞĞ§
+    output wire flash_we_n,  // Flash Ğ´Ê¹ÄÜĞÅºÅ£¬µÍÓĞĞ§
+    output wire flash_byte_n, // Flash 8bit Ä£Ê½Ñ¡Ôñ£¬µÍÓĞĞ§¡£ÔÚÊ¹ÓÃ flash µÄ 16 Î»Ä£Ê½Ê±ÇëÉèÎª 1
 
-    // USB æ§åˆ¶å™¨ä¿¡å·ï¼Œå‚è€ƒ SL811 èŠ¯ç‰‡æ‰‹å†Œ
+    // USB ¿ØÖÆÆ÷ĞÅºÅ£¬²Î¿¼ SL811 Ğ¾Æ¬ÊÖ²á
     output wire sl811_a0,
-    // inout  wire [7:0] sl811_d,     // USB æ•°æ®çº¿ä¸ç½‘ç»œæ§åˆ¶å™¨çš„ dm9k_sd[7:0] å…±äº«
+    // inout  wire [7:0] sl811_d,     // USB Êı¾İÏßÓëÍøÂç¿ØÖÆÆ÷µÄ dm9k_sd[7:0] ¹²Ïí
     output wire sl811_wr_n,
     output wire sl811_rd_n,
     output wire sl811_cs_n,
@@ -61,7 +61,7 @@ module thinpad_top (
     input  wire sl811_intrq,
     input  wire sl811_drq_n,
 
-    // ç½‘ç»œæ§åˆ¶å™¨ä¿¡å·ï¼Œå‚è€ƒ DM9000A èŠ¯ç‰‡æ‰‹å†Œ
+    // ÍøÂç¿ØÖÆÆ÷ĞÅºÅ£¬²Î¿¼ DM9000A Ğ¾Æ¬ÊÖ²á
     output wire dm9k_cmd,
     inout wire [15:0] dm9k_sd,
     output wire dm9k_iow_n,
@@ -70,60 +70,60 @@ module thinpad_top (
     output wire dm9k_pwrst_n,
     input wire dm9k_int,
 
-    // å›¾åƒè¾“å‡ºä¿¡å·
-    output wire [2:0] video_red,    // çº¢è‰²åƒç´ ï¼Œ3 ä½
-    output wire [2:0] video_green,  // ç»¿è‰²åƒç´ ï¼Œ3 ä½
-    output wire [1:0] video_blue,   // è“è‰²åƒç´ ï¼Œ2 ä½
-    output wire       video_hsync,  // è¡ŒåŒæ­¥ï¼ˆæ°´å¹³åŒæ­¥ï¼‰ä¿¡å·
-    output wire       video_vsync,  // åœºåŒæ­¥ï¼ˆå‚ç›´åŒæ­¥ï¼‰ä¿¡å·
-    output wire       video_clk,    // åƒç´ æ—¶é’Ÿè¾“å‡º
-    output wire       video_de      // è¡Œæ•°æ®æœ‰æ•ˆä¿¡å·ï¼Œç”¨äºåŒºåˆ†æ¶ˆéšåŒº
+    // Í¼ÏñÊä³öĞÅºÅ
+    output wire [2:0] video_red,    // ºìÉ«ÏñËØ£¬3 Î»
+    output wire [2:0] video_green,  // ÂÌÉ«ÏñËØ£¬3 Î»
+    output wire [1:0] video_blue,   // À¶É«ÏñËØ£¬2 Î»
+    output wire       video_hsync,  // ĞĞÍ¬²½£¨Ë®Æ½Í¬²½£©ĞÅºÅ
+    output wire       video_vsync,  // ³¡Í¬²½£¨´¹Ö±Í¬²½£©ĞÅºÅ
+    output wire       video_clk,    // ÏñËØÊ±ÖÓÊä³ö
+    output wire       video_de      // ĞĞÊı¾İÓĞĞ§ĞÅºÅ£¬ÓÃÓÚÇø·ÖÏûÒşÇø
 );
 
   /* =========== Demo code begin =========== */
 
-  // PLL åˆ†é¢‘ç¤ºä¾‹
+  // PLL ·ÖÆµÊ¾Àı
   logic locked, clk_10M, clk_20M;
   pll_example clock_gen (
       // Clock in ports
-      .clk_in1(clk_50M),  // å¤–éƒ¨æ—¶é’Ÿè¾“å…¥
+      .clk_in1(clk_50M),  // Íâ²¿Ê±ÖÓÊäÈë
       // Clock out ports
-      .clk_out1(clk_10M),  // æ—¶é’Ÿè¾“å‡º 1ï¼Œé¢‘ç‡åœ¨ IP é…ç½®ç•Œé¢ä¸­è®¾ç½®
-      .clk_out2(clk_20M),  // æ—¶é’Ÿè¾“å‡º 2ï¼Œé¢‘ç‡åœ¨ IP é…ç½®ç•Œé¢ä¸­è®¾ç½®
+      .clk_out1(clk_10M),  // Ê±ÖÓÊä³ö 1£¬ÆµÂÊÔÚ IP ÅäÖÃ½çÃæÖĞÉèÖÃ
+      .clk_out2(clk_20M),  // Ê±ÖÓÊä³ö 2£¬ÆµÂÊÔÚ IP ÅäÖÃ½çÃæÖĞÉèÖÃ
       // Status and control signals
-      .reset(reset_btn),  // PLL å¤ä½è¾“å…¥
-      .locked(locked)  // PLL é”å®šæŒ‡ç¤ºè¾“å‡ºï¼Œ"1"è¡¨ç¤ºæ—¶é’Ÿç¨³å®šï¼Œ
-                       // åçº§ç”µè·¯å¤ä½ä¿¡å·åº”å½“ç”±å®ƒç”Ÿæˆï¼ˆè§ä¸‹ï¼‰
+      .reset(reset_btn),  // PLL ¸´Î»ÊäÈë
+      .locked(locked)  // PLL Ëø¶¨Ö¸Ê¾Êä³ö£¬"1"±íÊ¾Ê±ÖÓÎÈ¶¨£¬
+                       // ºó¼¶µçÂ·¸´Î»ĞÅºÅÓ¦µ±ÓÉËüÉú³É£¨¼ûÏÂ£©
   );
 
   logic reset_of_clk10M;
-  // å¼‚æ­¥å¤ä½ï¼ŒåŒæ­¥é‡Šæ”¾ï¼Œå°† locked ä¿¡å·è½¬ä¸ºåçº§ç”µè·¯çš„å¤ä½ reset_of_clk10M
+  // Òì²½¸´Î»£¬Í¬²½ÊÍ·Å£¬½« locked ĞÅºÅ×ªÎªºó¼¶µçÂ·µÄ¸´Î» reset_of_clk10M
   always_ff @(posedge clk_10M or negedge locked) begin
     if (~locked) reset_of_clk10M <= 1'b1;
     else reset_of_clk10M <= 1'b0;
   end
 
-  always_ff @(posedge clk_10M or posedge reset_of_clk10M) begin
-    if (reset_of_clk10M) begin
-      // Your Code
-    end else begin
-      // Your Code
-    end
-  end
+  // always_ff @(posedge clk_10M or posedge reset_of_clk10M) begin
+  //   if (reset_of_clk10M) begin
+  //     // Your Code
+  //   end else begin
+  //     // Your Code
+  //   end
+  // end
 
-  // ä¸ä½¿ç”¨å†…å­˜ã€ä¸²å£æ—¶ï¼Œç¦ç”¨å…¶ä½¿èƒ½ä¿¡å·
-  assign base_ram_ce_n = 1'b1;
-  assign base_ram_oe_n = 1'b1;
-  assign base_ram_we_n = 1'b1;
+  // ²»Ê¹ÓÃÄÚ´æ¡¢´®¿ÚÊ±£¬½ûÓÃÆäÊ¹ÄÜĞÅºÅ
+  // assign base_ram_ce_n = 1'b1;
+  // assign base_ram_oe_n = 1'b1;
+  // assign base_ram_we_n = 1'b1;
 
-  assign ext_ram_ce_n = 1'b1;
-  assign ext_ram_oe_n = 1'b1;
-  assign ext_ram_we_n = 1'b1;
+  // assign ext_ram_ce_n = 1'b1;
+  // assign ext_ram_oe_n = 1'b1;
+  // assign ext_ram_we_n = 1'b1;
 
   assign uart_rdn = 1'b1;
   assign uart_wrn = 1'b1;
 
-  // æ•°ç ç®¡è¿æ¥å…³ç³»ç¤ºæ„å›¾ï¼Œdpy1 åŒç†
+  // ÊıÂë¹ÜÁ¬½Ó¹ØÏµÊ¾ÒâÍ¼£¬dpy1 Í¬Àí
   // p=dpy0[0] // ---a---
   // c=dpy0[1] // |     |
   // d=dpy0[2] // f     b
@@ -134,92 +134,562 @@ module thinpad_top (
   // g=dpy0[7] // |     |
   //           // ---d---  p
 
-  // 7 æ®µæ•°ç ç®¡è¯‘ç å™¨æ¼”ç¤ºï¼Œå°† number ç”¨ 16 è¿›åˆ¶æ˜¾ç¤ºåœ¨æ•°ç ç®¡ä¸Šé¢
-  logic [7:0] number;
-  SEG7_LUT segL (
-      .oSEG1(dpy0),
-      .iDIG (number[3:0])
-  );  // dpy0 æ˜¯ä½ä½æ•°ç ç®¡
-  SEG7_LUT segH (
-      .oSEG1(dpy1),
-      .iDIG (number[7:4])
-  );  // dpy1 æ˜¯é«˜ä½æ•°ç ç®¡
+  // // 7 ¶ÎÊıÂë¹ÜÒëÂëÆ÷ÑİÊ¾£¬½« number ÓÃ 16 ½øÖÆÏÔÊ¾ÔÚÊıÂë¹ÜÉÏÃæ
+  // logic [7:0] number;
+  // SEG7_LUT segL (
+  //     .oSEG1(dpy0),
+  //     .iDIG (number[3:0])
+  // );  // dpy0 ÊÇµÍÎ»ÊıÂë¹Ü
+  // SEG7_LUT segH (
+  //     .oSEG1(dpy1),
+  //     .iDIG (number[7:4])
+  // );  // dpy1 ÊÇ¸ßÎ»ÊıÂë¹Ü
 
-  logic [15:0] led_bits;
-  assign leds = led_bits;
+  // logic [15:0] led_bits;
+  // assign leds = led_bits;
 
-  always_ff @(posedge push_btn or posedge reset_btn) begin
-    if (reset_btn) begin  // å¤ä½æŒ‰ä¸‹ï¼Œè®¾ç½® LED ä¸ºåˆå§‹å€¼
-      led_bits <= 16'h1;
-    end else begin  // æ¯æ¬¡æŒ‰ä¸‹æŒ‰é’®å¼€å…³ï¼ŒLED å¾ªç¯å·¦ç§»
-      led_bits <= {led_bits[14:0], led_bits[15]};
-    end
-  end
+  // always_ff @(posedge push_btn or posedge reset_btn) begin
+  //   if (reset_btn) begin  // ¸´Î»°´ÏÂ£¬ÉèÖÃ LED Îª³õÊ¼Öµ
+  //     led_bits <= 16'h1;
+  //   end else begin  // Ã¿´Î°´ÏÂ°´Å¥¿ª¹Ø£¬LED Ñ­»·×óÒÆ
+  //     led_bits <= {led_bits[14:0], led_bits[15]};
+  //   end
+  // end
 
-  // ç›´è¿ä¸²å£æ¥æ”¶å‘é€æ¼”ç¤ºï¼Œä»ç›´è¿ä¸²å£æ”¶åˆ°çš„æ•°æ®å†å‘é€å‡ºå»
-  logic [7:0] ext_uart_rx;
-  logic [7:0] ext_uart_buffer, ext_uart_tx;
-  logic ext_uart_ready, ext_uart_clear, ext_uart_busy;
-  logic ext_uart_start, ext_uart_avai;
+  // // Ö±Á¬´®¿Ú½ÓÊÕ·¢ËÍÑİÊ¾£¬´ÓÖ±Á¬´®¿ÚÊÕµ½µÄÊı¾İÔÙ·¢ËÍ³öÈ¥
+  // logic [7:0] ext_uart_rx;
+  // logic [7:0] ext_uart_buffer, ext_uart_tx;
+  // logic ext_uart_ready, ext_uart_clear, ext_uart_busy;
+  // logic ext_uart_start, ext_uart_avai;
 
-  assign number = ext_uart_buffer;
+  // assign number = ext_uart_buffer;
 
-  // æ¥æ”¶æ¨¡å—ï¼Œ9600 æ— æ£€éªŒä½
-  async_receiver #(
-      .ClkFrequency(50000000),
-      .Baud(9600)
-  ) ext_uart_r (
-      .clk           (clk_50M),         // å¤–éƒ¨æ—¶é’Ÿä¿¡å·
-      .RxD           (rxd),             // å¤–éƒ¨ä¸²è¡Œä¿¡å·è¾“å…¥
-      .RxD_data_ready(ext_uart_ready),  // æ•°æ®æ¥æ”¶åˆ°æ ‡å¿—
-      .RxD_clear     (ext_uart_clear),  // æ¸…é™¤æ¥æ”¶æ ‡å¿—
-      .RxD_data      (ext_uart_rx)      // æ¥æ”¶åˆ°çš„ä¸€å­—èŠ‚æ•°æ®
-  );
+  // // ½ÓÊÕÄ£¿é£¬9600 ÎŞ¼ìÑéÎ»
+  // async_receiver #(
+  //     .ClkFrequency(50000000),
+  //     .Baud(9600)
+  // ) ext_uart_r (
+  //     .clk           (clk_50M),         // Íâ²¿Ê±ÖÓĞÅºÅ
+  //     .RxD           (rxd),             // Íâ²¿´®ĞĞĞÅºÅÊäÈë
+  //     .RxD_data_ready(ext_uart_ready),  // Êı¾İ½ÓÊÕµ½±êÖ¾
+  //     .RxD_clear     (ext_uart_clear),  // Çå³ı½ÓÊÕ±êÖ¾
+  //     .RxD_data      (ext_uart_rx)      // ½ÓÊÕµ½µÄÒ»×Ö½ÚÊı¾İ
+  // );
 
-  assign ext_uart_clear = ext_uart_ready; // æ”¶åˆ°æ•°æ®çš„åŒæ—¶ï¼Œæ¸…é™¤æ ‡å¿—ï¼Œå› ä¸ºæ•°æ®å·²å–åˆ° ext_uart_buffer ä¸­
-  always_ff @(posedge clk_50M) begin  // æ¥æ”¶åˆ°ç¼“å†²åŒº ext_uart_buffer
-    if (ext_uart_ready) begin
-      ext_uart_buffer <= ext_uart_rx;
-      ext_uart_avai   <= 1;
-    end else if (!ext_uart_busy && ext_uart_avai) begin
-      ext_uart_avai <= 0;
-    end
-  end
-  always_ff @(posedge clk_50M) begin  // å°†ç¼“å†²åŒº ext_uart_buffer å‘é€å‡ºå»
-    if (!ext_uart_busy && ext_uart_avai) begin
-      ext_uart_tx <= ext_uart_buffer;
-      ext_uart_start <= 1;
-    end else begin
-      ext_uart_start <= 0;
-    end
-  end
+  // assign ext_uart_clear = ext_uart_ready; // ÊÕµ½Êı¾İµÄÍ¬Ê±£¬Çå³ı±êÖ¾£¬ÒòÎªÊı¾İÒÑÈ¡µ½ ext_uart_buffer ÖĞ
+  // always_ff @(posedge clk_50M) begin  // ½ÓÊÕµ½»º³åÇø ext_uart_buffer
+  //   if (ext_uart_ready) begin
+  //     ext_uart_buffer <= ext_uart_rx;
+  //     ext_uart_avai   <= 1;
+  //   end else if (!ext_uart_busy && ext_uart_avai) begin
+  //     ext_uart_avai <= 0;
+  //   end
+  // end
+  // always_ff @(posedge clk_50M) begin  // ½«»º³åÇø ext_uart_buffer ·¢ËÍ³öÈ¥
+  //   if (!ext_uart_busy && ext_uart_avai) begin
+  //     ext_uart_tx <= ext_uart_buffer;
+  //     ext_uart_start <= 1;
+  //   end else begin
+  //     ext_uart_start <= 0;
+  //   end
+  // end
 
-  // å‘é€æ¨¡å—ï¼Œ9600 æ— æ£€éªŒä½
-  async_transmitter #(
-      .ClkFrequency(50000000),
-      .Baud(9600)
-  ) ext_uart_t (
-      .clk      (clk_50M),         // å¤–éƒ¨æ—¶é’Ÿä¿¡å·
-      .TxD      (txd),             // ä¸²è¡Œä¿¡å·è¾“å‡º
-      .TxD_busy (ext_uart_busy),   // å‘é€å™¨å¿™çŠ¶æ€æŒ‡ç¤º
-      .TxD_start(ext_uart_start),  // å¼€å§‹å‘é€ä¿¡å·
-      .TxD_data (ext_uart_tx)      // å¾…å‘é€çš„æ•°æ®
-  );
+  // // ·¢ËÍÄ£¿é£¬9600 ÎŞ¼ìÑéÎ»
+  // async_transmitter #(
+  //     .ClkFrequency(50000000),
+  //     .Baud(9600)
+  // ) ext_uart_t (
+  //     .clk      (clk_50M),         // Íâ²¿Ê±ÖÓĞÅºÅ
+  //     .TxD      (txd),             // ´®ĞĞĞÅºÅÊä³ö
+  //     .TxD_busy (ext_uart_busy),   // ·¢ËÍÆ÷Ã¦×´Ì¬Ö¸Ê¾
+  //     .TxD_start(ext_uart_start),  // ¿ªÊ¼·¢ËÍĞÅºÅ
+  //     .TxD_data (ext_uart_tx)      // ´ı·¢ËÍµÄÊı¾İ
+  // );
 
-  // å›¾åƒè¾“å‡ºæ¼”ç¤ºï¼Œåˆ†è¾¨ç‡ 800x600@75Hzï¼Œåƒç´ æ—¶é’Ÿä¸º 50MHz
-  logic [11:0] hdata;
-  assign video_red   = hdata < 266 ? 3'b111 : 0;  // çº¢è‰²ç«–æ¡
-  assign video_green = hdata < 532 && hdata >= 266 ? 3'b111 : 0;  // ç»¿è‰²ç«–æ¡
-  assign video_blue  = hdata >= 532 ? 2'b11 : 0;  // è“è‰²ç«–æ¡
-  assign video_clk   = clk_50M;
-  vga #(12, 800, 856, 976, 1040, 600, 637, 643, 666, 1, 1) vga800x600at75 (
-      .clk        (clk_50M),
-      .hdata      (hdata),        // æ¨ªåæ ‡
-      .vdata      (),             // çºµåæ ‡
-      .hsync      (video_hsync),
-      .vsync      (video_vsync),
-      .data_enable(video_de)
-  );
+  // // Í¼ÏñÊä³öÑİÊ¾£¬·Ö±æÂÊ 800x600@75Hz£¬ÏñËØÊ±ÖÓÎª 50MHz
+  // logic [11:0] hdata;
+  // assign video_red   = hdata < 266 ? 3'b111 : 0;  // ºìÉ«ÊúÌõ
+  // assign video_green = hdata < 532 && hdata >= 266 ? 3'b111 : 0;  // ÂÌÉ«ÊúÌõ
+  // assign video_blue  = hdata >= 532 ? 2'b11 : 0;  // À¶É«ÊúÌõ
+  // assign video_clk   = clk_50M;
+  // vga #(12, 800, 856, 976, 1040, 600, 637, 643, 666, 1, 1) vga800x600at75 (
+  //     .clk        (clk_50M),
+  //     .hdata      (hdata),        // ºá×ø±ê
+  //     .vdata      (),             // ×İ×ø±ê
+  //     .hsync      (video_hsync),
+  //     .vsync      (video_vsync),
+  //     .data_enable(video_de)
+  // );
   /* =========== Demo code end =========== */
+
+  logic sys_clk;
+  logic sys_rst;
+
+  assign sys_clk = clk_10M;
+  assign sys_rst = reset_of_clk10M;
+
+  logic [31:0] if_PC;
+  logic [31:0] if_inst;
+  logic [3:0] if_master_state;
+  logic [31:0] id_PC;
+  logic [31:0] id_inst;
+  logic [4:0] id_rs1;
+  logic [4:0] id_rs2;
+  logic [4:0] id_rd;
+  logic id_alu_src;
+  logic [3:0] id_alu_funct;
+  logic [2:0] id_inst_type;
+  logic [31:0] id_imm;
+  logic [31:0] id_rf_rdata1;
+  logic [31:0] id_rf_rdata2;
+  logic [31:0] exe_inst;
+  logic [2:0] exe_inst_type;
+  logic [31:0] exe_branch_addr;
+  logic [3:0] exe_alu_funct;
+  logic exe_alu_src; // alu µÄµÚ 2 ¸öÊäÈëÊÇ rdata_2£¨0£©»ò imm£¨1£©
+  logic [31:0] exe_imm;
+  logic [31:0] exe_rdata1;
+  logic [31:0] exe_rdata2;
+  logic [31:0] exe_alu_result;
+  logic exe_alu_zero;
+  logic [31:0] mem_inst;
+  logic [2:0] mem_inst_type;
+  logic mem_PC_src;
+  logic [31:0] mem_alu_result;
+  logic [31:0] mem_branch_addr;
+  logic mem_ren;
+  logic mem_wen;
+  logic [31:0] mem_addr;
+  logic [31:0] mem_wdata;
+  logic mem_sel_byte;
+  logic [31:0] mem_rdata;
+  logic [3:0] mem_master_state;
+  logic [4:0] wb_rd;
+  logic [31:0] wb_rf_wdata;
+  logic wb_rf_wen;
+  logic [4:0] stall;
+  logic [4:0] flush;
+
+  stall_controller stall_controller (
+    .if_master_state_i(if_master_state),
+    .mem_master_state_i(mem_master_state),
+    .mem_master_wen(mem_wen),
+    .mem_master_ren(mem_ren),
+    .id_inst_i(id_inst),
+    .id_inst_type_i(id_inst_type),
+    .exe_inst_i(exe_inst),
+    .exe_inst_type_i(exe_inst_type),
+    .mem_inst_i(mem_inst),
+    .mem_inst_type_i(mem_inst_type),
+    .wb_rd_i(wb_rd),
+    .wb_rf_wen_i(wb_rf_wen),
+    .exe_alu_zero_i(exe_alu_zero),
+    .stall_o(stall),
+    .flush_o(flush)
+  );
+
+  PC_mux PC_mux(
+    .clk_i(sys_clk),
+    .rst_i(sys_rst),
+    .rst_addr_i(32'h8000_0000),
+    .stall_i(stall[0]),
+    .PC_src_i((exe_inst_type == 3'b010 && exe_alu_zero)),
+    .branch_addr_i(exe_branch_addr),
+    .PC_o(if_PC)
+  );
+
+
+  IF_ID_controller IF_ID_controller(
+    .clk_i(sys_clk),
+    .rst_i(sys_rst),
+    .stall_i(stall[1]),
+    .flush_i(flush[1]),
+    .PC_i(if_PC),
+    .inst_i(if_inst),
+    .PC_o(id_PC),
+    .inst_o(id_inst)
+  );
+
+  inst_decoder inst_decoder(
+    .inst_i(id_inst),
+    .rs1_o(id_rs1),
+    .rs2_o(id_rs2),
+    .rd_o(id_rd),
+    .alu_src_o(id_alu_src), // alu µÄµÚ 2 ¸öÊäÈëÊÇ rdata_2£¨0£©»¹ÊÇ imm£¨1£©
+    .alu_funct_o(id_alu_funct),
+    .inst_type_o(id_inst_type),
+    .imm_o(id_imm)
+  );
+
+  register_file_32 register_file (
+    .clk_i(sys_clk),
+    .rst_i(sys_rst),
+    .rd_i(wb_rd),
+    .wdata_i(wb_rf_wdata),
+    .we_i(wb_rf_wen),
+    .rs1_i(id_rs1),
+    .rs2_i(id_rs2),
+    .rdata1_o(id_rf_rdata1),
+    .rdata2_o(id_rf_rdata2)
+  );
+
+  ID_EXE_controller ID_EXE_controller(
+    .clk_i(sys_clk),
+    .rst_i(sys_rst),
+    .stall_i(stall[2]),
+    .flush_i(flush[2]),
+    .PC_i(id_PC),
+    .inst_i(id_inst),
+    .inst_type_i(id_inst_type),
+    .alu_funct_i(id_alu_funct),
+    .alu_src_i(id_alu_src),
+    .imm_i(id_imm),
+    .rdata1_i(id_rf_rdata1),
+    .rdata2_i(id_rf_rdata2),
+    .inst_o(exe_inst),
+    .inst_type_o(exe_inst_type),
+    .branch_addr_o(exe_branch_addr), 
+    .alu_funct_o(exe_alu_funct),
+    .alu_src_o(exe_alu_src), 
+    .imm_o(exe_imm),
+    .rdata1_o(exe_rdata1),
+    .rdata2_o(exe_rdata2)
+  );
+
+  ALU_32 ALU(
+    .a(exe_rdata1),
+    .b(exe_alu_src ? exe_imm : exe_rdata2),
+    .op(exe_alu_funct),
+    .y(exe_alu_result),
+    .zero_o(exe_alu_zero)
+  );
+
+  EXE_MEM_controller EXE_MEM_controller(
+    .clk_i(sys_clk),
+    .rst_i(sys_rst),
+    .stall_i(stall[3]),
+    .flush_i(flush[3]),
+    .inst_i(exe_inst),
+    .inst_type_i(exe_inst_type),
+    .alu_result_i(exe_alu_result),
+    .rdata2_i(exe_rdata2),
+    .inst_o(mem_inst),
+    .inst_type_o(mem_inst_type),
+    .alu_result_o(mem_alu_result),
+    .mem_ren_o(mem_ren), // ÊÇ£¨1£©·ñ£¨0£©¶Á mem
+    .mem_wen_o(mem_wen), // ÊÇ£¨1£©·ñ£¨0£©Ğ´ mem
+    .mem_addr_o(mem_addr), 
+    .mem_wdata_o(mem_wdata),
+    .sel_byte_o(mem_sel_byte)
+  );
+
+  MEM_WB_controller MEM_WB_controller(
+    .clk_i(sys_clk),
+    .rst_i(sys_rst),
+    .stall_i(stall[4]),
+    .flush_i(flush[4]),
+    .inst_i(mem_inst),
+	  .inst_type_i(mem_inst_type),
+    .alu_result_i(mem_alu_result),
+    .mem_read_data_i(mem_rdata), // ¶ÁÄÚ´æµÄÊı¾İ
+    .rf_wen_o(wb_rf_wen),
+    .rf_wdata_o(wb_rf_wdata),
+    .rf_waddr_o(wb_rd)
+  );
+
+  /***********************ÍâÉè²¿·Ö¿ªÊ¼***************************/  
+  logic wbm0_cyc_o;
+  logic wbm0_stb_o;
+  logic wbm0_ack_i;
+  logic [31:0] wbm0_adr_o;
+  logic [31:0] wbm0_dat_o;
+  logic [31:0] wbm0_dat_i;
+  logic [3:0] wbm0_sel_o;
+  logic wbm0_we_o;
+
+  logic wbm1_cyc_o;
+  logic wbm1_stb_o;
+  logic wbm1_ack_i;
+  logic [31:0] wbm1_adr_o;
+  logic [31:0] wbm1_dat_o;
+  logic [31:0] wbm1_dat_i;
+  logic [3:0] wbm1_sel_o;
+  logic wbm1_we_o;
+
+  logic [31:0] wbm_adr_o;
+  logic [31:0] wbm_dat_o;
+  logic [31:0] wbm_dat_i;
+  logic wbm_we_o;
+  logic [3:0] wbm_sel_o;
+  logic wbm_stb_o;
+  logic wbm_ack_i;
+  logic wbm_cyc_o;
+
+  logic [31:0] wbs0_adr_o;
+  logic [31:0] wbs0_dat_i;
+  logic [31:0] wbs0_dat_o;
+  logic wbs0_we_o;
+  logic [3:0] wbs0_sel_o;
+  logic wbs0_stb_o;
+  logic wbs0_ack_i;
+  logic wbs0_cyc_o;
+
+  logic [31:0] wbs1_adr_o;
+  logic [31:0] wbs1_dat_i;
+  logic [31:0] wbs1_dat_o;
+  logic wbs1_we_o;
+  logic [3:0] wbs1_sel_o;
+  logic wbs1_stb_o;
+  logic wbs1_ack_i;
+  logic wbs1_cyc_o;
+
+  logic [31:0] wbs2_adr_o;
+  logic [31:0] wbs2_dat_i;
+  logic [31:0] wbs2_dat_o;
+  logic wbs2_we_o;
+  logic [3:0] wbs2_sel_o;
+  logic wbs2_stb_o;
+  logic wbs2_ack_i;
+  logic wbs2_cyc_o;
+
+  master #(
+    .ADDR_WIDTH(32),
+    .DATA_WIDTH(32)
+  ) cpu_if_master (
+    .clk_i(sys_clk),
+    .rst_i(sys_rst),
+    .stall(stall[0]),
+    .addr_i(if_PC),
+    .wdata_i('0),
+    .wen_i(1'b0),
+    .ren_i(1'b1),
+    .sel_byte_i(1'b0), // ×Ö½Ú£¨1£©»òÕß×Ö£¨0£©
+    .init(1'b1),
+    .rdata_o(if_inst),
+    .wb_cyc_o(wbm0_cyc_o),
+    .wb_stb_o(wbm0_stb_o),
+    .wb_ack_i(wbm0_ack_i),
+    .wb_adr_o(wbm0_adr_o),
+    .wb_dat_o(wbm0_dat_o),
+    .wb_dat_i(wbm0_dat_i),
+    .wb_sel_o(wbm0_sel_o),
+    .wb_we_o (wbm0_we_o),
+    .state_o(if_master_state)
+  );
+
+  master #(
+    .ADDR_WIDTH(32),
+    .DATA_WIDTH(32)
+  ) cpu_mem_master (
+    .clk_i(sys_clk),
+    .rst_i(sys_rst),
+    .stall(stall[3]),
+    .addr_i(mem_alu_result),
+    .wdata_i(mem_wdata),
+    .wen_i(mem_wen),
+    .ren_i(mem_ren),
+    .sel_byte_i(mem_sel_byte), // ×Ö½Ú£¨1£©»òÕß×Ö£¨0£©
+    .init(1'b0),
+    .rdata_o(mem_rdata),
+    .wb_cyc_o(wbm1_cyc_o),
+    .wb_stb_o(wbm1_stb_o),
+    .wb_ack_i(wbm1_ack_i),
+    .wb_adr_o(wbm1_adr_o),
+    .wb_dat_o(wbm1_dat_o),
+    .wb_dat_i(wbm1_dat_i),
+    .wb_sel_o(wbm1_sel_o),
+    .wb_we_o (wbm1_we_o),
+    .state_o(mem_master_state)
+  );
+
+  wb_arbiter_2 #(
+    .DATA_WIDTH(32),
+    .ADDR_WIDTH(32),
+    .SELECT_WIDTH(4),
+    .ARB_TYPE_ROUND_ROBIN(0),
+    .ARB_LSB_HIGH_PRIORITY(0) // ÉèÖÃÎª 0 µÄÊ±ºò 1 ºÅ¿ÚµÄÓÅÏÈ¼¶¸ü¸ß£¬ÉèÖÃÎª 1 µÄÊ±ºò 0 ºÅ¿ÚµÄÓÅÏÈ¼¶»á¸ü¸ß
+  ) wb_arbiter_2 (
+    .clk(sys_clk),
+    .rst(sys_rst),
+    // Wishbone master 0 input
+    .wbm0_adr_i(wbm0_adr_o),
+    .wbm0_dat_i(wbm0_dat_o),
+    .wbm0_dat_o(wbm0_dat_i),
+    .wbm0_we_i(wbm0_we_o),
+    .wbm0_sel_i(wbm0_sel_o),
+    .wbm0_stb_i(wbm0_stb_o),
+    .wbm0_ack_o(wbm0_ack_i),
+    .wbm0_err_o(),
+    .wbm0_rty_o(),
+    .wbm0_cyc_i(wbm0_cyc_o),
+    // Wishbone master 1 input
+    .wbm1_adr_i(wbm1_adr_o),
+    .wbm1_dat_i(wbm1_dat_o),
+    .wbm1_dat_o(wbm1_dat_i),
+    .wbm1_we_i(wbm1_we_o),
+    .wbm1_sel_i(wbm1_sel_o),
+    .wbm1_stb_i(wbm1_stb_o),
+    .wbm1_ack_o(wbm1_ack_i),
+    .wbm1_err_o(),
+    .wbm1_rty_o(),
+    .wbm1_cyc_i(wbm1_cyc_o),
+    // Wishbone slave output
+    .wbs_adr_o(wbm_adr_o),
+    .wbs_dat_i(wbm_dat_i),
+    .wbs_dat_o(wbm_dat_o),
+    .wbs_we_o(wbm_we_o),
+    .wbs_sel_o(wbm_sel_o),
+    .wbs_stb_o(wbm_stb_o),
+    .wbs_ack_i(wbm_ack_i),
+    .wbs_err_i('0),
+    .wbs_rty_i('0),
+    .wbs_cyc_o(wbm_cyc_o)
+  );
+
+  /* =========== MUX begin =========== */
+  wb_mux_3 wb_mux (
+    .clk(sys_clk),
+    .rst(sys_rst),
+
+    // Master interface (to arbiter)
+    .wbm_adr_i(wbm_adr_o),
+    .wbm_dat_i(wbm_dat_o),
+    .wbm_dat_o(wbm_dat_i),
+    .wbm_we_i (wbm_we_o),
+    .wbm_sel_i(wbm_sel_o),
+    .wbm_stb_i(wbm_stb_o),
+    .wbm_ack_o(wbm_ack_i),
+    .wbm_err_o(),
+    .wbm_rty_o(),
+    .wbm_cyc_i(wbm_cyc_o),
+
+    // Slave interface 0 (to BaseRAM controller)
+    // Address range: 0x8000_0000 ~ 0x803F_FFFF
+    .wbs0_addr    (32'h8000_0000),
+    .wbs0_addr_msk(32'hFFC0_0000),
+
+    .wbs0_adr_o(wbs0_adr_o),
+    .wbs0_dat_i(wbs0_dat_i),
+    .wbs0_dat_o(wbs0_dat_o),
+    .wbs0_we_o (wbs0_we_o),
+    .wbs0_sel_o(wbs0_sel_o),
+    .wbs0_stb_o(wbs0_stb_o),
+    .wbs0_ack_i(wbs0_ack_i),
+    .wbs0_err_i('0),
+    .wbs0_rty_i('0),
+    .wbs0_cyc_o(wbs0_cyc_o),
+
+    // Slave interface 1 (to ExtRAM controller)
+    // Address range: 0x8040_0000 ~ 0x807F_FFFF
+    .wbs1_addr    (32'h8040_0000),
+    .wbs1_addr_msk(32'hFFC0_0000),
+
+    .wbs1_adr_o(wbs1_adr_o),
+    .wbs1_dat_i(wbs1_dat_i),
+    .wbs1_dat_o(wbs1_dat_o),
+    .wbs1_we_o (wbs1_we_o),
+    .wbs1_sel_o(wbs1_sel_o),
+    .wbs1_stb_o(wbs1_stb_o),
+    .wbs1_ack_i(wbs1_ack_i),
+    .wbs1_err_i('0),
+    .wbs1_rty_i('0),
+    .wbs1_cyc_o(wbs1_cyc_o),
+
+    // Slave interface 2 (to UART controller)
+    // Address range: 0x1000_0000 ~ 0x1000_FFFF
+    .wbs2_addr    (32'h1000_0000),
+    .wbs2_addr_msk(32'hFFFF_0000),
+
+    .wbs2_adr_o(wbs2_adr_o),
+    .wbs2_dat_i(wbs2_dat_i),
+    .wbs2_dat_o(wbs2_dat_o),
+    .wbs2_we_o (wbs2_we_o),
+    .wbs2_sel_o(wbs2_sel_o),
+    .wbs2_stb_o(wbs2_stb_o),
+    .wbs2_ack_i(wbs2_ack_i),
+    .wbs2_err_i('0),
+    .wbs2_rty_i('0),
+    .wbs2_cyc_o(wbs2_cyc_o)
+  );
+  /* =========== MUX end =========== */
+
+  /* =========== Slaves begin =========== */
+  sram_controller #(
+    .SRAM_ADDR_WIDTH(20),
+    .SRAM_DATA_WIDTH(32)
+  ) sram_controller_base (
+    .clk_i(sys_clk),
+    .rst_i(sys_rst),
+
+    // Wishbone slave (to MUX)
+    .wb_cyc_i(wbs0_cyc_o),
+    .wb_stb_i(wbs0_stb_o),
+    .wb_ack_o(wbs0_ack_i),
+    .wb_adr_i(wbs0_adr_o),
+    .wb_dat_i(wbs0_dat_o),
+    .wb_dat_o(wbs0_dat_i),
+    .wb_sel_i(wbs0_sel_o),
+    .wb_we_i (wbs0_we_o),
+
+    // To SRAM chip
+    .sram_addr(base_ram_addr),
+    .sram_data(base_ram_data),
+    .sram_ce_n(base_ram_ce_n),
+    .sram_oe_n(base_ram_oe_n),
+    .sram_we_n(base_ram_we_n),
+    .sram_be_n(base_ram_be_n)
+  );
+
+  sram_controller #(
+    .SRAM_ADDR_WIDTH(20),
+    .SRAM_DATA_WIDTH(32)
+  ) sram_controller_ext (
+    .clk_i(sys_clk),
+    .rst_i(sys_rst),
+
+    // Wishbone slave (to MUX)
+    .wb_cyc_i(wbs1_cyc_o),
+    .wb_stb_i(wbs1_stb_o),
+    .wb_ack_o(wbs1_ack_i),
+    .wb_adr_i(wbs1_adr_o),
+    .wb_dat_i(wbs1_dat_o),
+    .wb_dat_o(wbs1_dat_i),
+    .wb_sel_i(wbs1_sel_o),
+    .wb_we_i (wbs1_we_o),
+
+    // To SRAM chip
+    .sram_addr(ext_ram_addr),
+    .sram_data(ext_ram_data),
+    .sram_ce_n(ext_ram_ce_n),
+    .sram_oe_n(ext_ram_oe_n),
+    .sram_we_n(ext_ram_we_n),
+    .sram_be_n(ext_ram_be_n)
+  );
+
+  // ´®¿Ú¿ØÖÆÆ÷Ä£¿é
+  // NOTE: Èç¹ûĞŞ¸ÄÏµÍ³Ê±ÖÓÆµÂÊ£¬Ò²ĞèÒªĞŞ¸Ä´Ë´¦µÄÊ±ÖÓÆµÂÊ²ÎÊı
+  uart_controller #(
+    .CLK_FREQ(10_000_000),
+    .BAUD    (115200)
+  ) uart_controller (
+    .clk_i(sys_clk),
+    .rst_i(sys_rst),
+
+    .wb_cyc_i(wbs2_cyc_o),
+    .wb_stb_i(wbs2_stb_o),
+    .wb_ack_o(wbs2_ack_i),
+    .wb_adr_i(wbs2_adr_o),
+    .wb_dat_i(wbs2_dat_o),
+    .wb_dat_o(wbs2_dat_i),
+    .wb_sel_i(wbs2_sel_o),
+    .wb_we_i (wbs2_we_o),
+
+    // to UART pins
+    .uart_txd_o(txd),
+    .uart_rxd_i(rxd)
+  );
+  /* =========== Slaves begin =========== */
+
+  /***********************ÍâÉè²¿·Ö½áÊø***************************/
 
 endmodule
