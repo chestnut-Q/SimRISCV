@@ -56,7 +56,7 @@ module inst_decoder (
 		aluADD = 0,
 		aluSUB = 1,
 		aluAND = 2,
-		aluOR = 3£¬
+		aluOR = 3,
         aluXOR = 4,
         aluNOT = 5,
         aluSLL = 6,
