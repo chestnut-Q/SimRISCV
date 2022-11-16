@@ -15,12 +15,12 @@ module IF_ID_controller (
 	always_ff @(posedge clk_i or posedge rst_i) begin
 		if (rst_i) begin
             PC_o <= 32'd0;
-            inst_o <= 32'h0000_0013;
+            inst_o <= 32'h0000_0013;//nop
 		end else if (stall_i) begin
 			PC_o <= PC_o;
 			inst_o <= inst_o;
 		end else if (flush_i) begin
-			inst_o <= 32'h0000_0013;
+			inst_o <= 32'h0000_0013;//pc_o??
 		end else begin
             PC_o <= PC_i;
             inst_o <= inst_i;

@@ -41,7 +41,7 @@ module EXE_MEM_controller (
 	assign rs2 = inst_i[24:20];
 	assign rd = inst_i[11:7];
 	assign mem_wen = (opcode == 7'b0100011);
-	assign mem_ren = (opcode == 7'b0000011 && rd != 5'b00000);
+	assign mem_ren = (opcode == 7'b0000011 && rd != 5'b00000);// 这样对寄存器堆的处理会不会麻烦了？
 	assign mem_wdata = inst_i[14:12] == 3'b010 ? rdata2_i : {24'b0, rdata2_i[7:0]}; // TODO: �ɼ��ٱȽ�λ��
 
 	always_ff @(posedge clk_i or posedge rst_i) begin

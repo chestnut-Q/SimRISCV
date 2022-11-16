@@ -59,7 +59,7 @@ module stall_controller (
         ALREADY = 5
 	} state_t;
 
-    always_comb begin
+    always_comb begin// J指令待补充
         stall_o = 5'b00000;
         flush_o = 5'b00000;
         if (!(if_master_state_i == ALREADY &&
