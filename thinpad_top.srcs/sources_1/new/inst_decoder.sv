@@ -63,7 +63,8 @@ module inst_decoder (
         aluSRL = 7,
         aluSRA = 8,
         aluROL = 9,
-        jump = 10 //Jָ�pc+4
+        jump = 10, //Jָ�pc+4
+        aluLUI = 11
     } alu_funct_t;
 
     alu_funct_t alu_funct;
@@ -106,7 +107,7 @@ module inst_decoder (
             7'b0100011: alu_funct = aluADD; // SB, SW
             7'b0000011: alu_funct = aluADD; // LB, LW
             7'b1100011: alu_funct = aluSUB; // BEQ, BNE
-            7'b0110111: alu_funct = aluADD; // LUI
+            7'b0110111: alu_funct = aluLUI; // LUI
             7'b0110111: alu_funct = aluADD; // AUIPC
             7'b1101111: alu_funct = jump; // JAL
             7'b1100111: alu_funct = jump; // JALR

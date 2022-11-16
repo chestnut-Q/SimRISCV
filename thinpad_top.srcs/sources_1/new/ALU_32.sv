@@ -18,7 +18,9 @@ module ALU_32 (
         aluSLL = 6,
         aluSRL = 7,
         aluSRA = 8,
-        aluROL = 9
+        aluROL = 9,
+        jump = 10, //J指令，pc+4
+        aluLUI = 11
     } alu_funct_t;
 
     always_comb begin
@@ -34,6 +36,7 @@ module ALU_32 (
             aluSRA: y = $signed(a) >>> b[4:0];
             aluROL: y = (a << b[4:0]) | (a >> (32 - b[4:0])); 
             jump: y = a + 4;
+            aluLUI: y = b;
             default: y = 32'd0;
         endcase
     end
