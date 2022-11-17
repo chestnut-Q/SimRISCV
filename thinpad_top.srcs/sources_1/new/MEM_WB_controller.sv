@@ -34,7 +34,7 @@ module MEM_WB_controller (
 	assign opcode = inst_i[6:0];
 	assign funct3 = inst_i[14:12];
 	assign rd = inst_i[11:7];
-	assign rf_wen = (inst_type_i == R_TYPE || inst_type_i == I_TYPE || inst_type_i == U_TYPE);//是不是该叫we？
+	assign rf_wen = (inst_type_i == R_TYPE || inst_type_i == I_TYPE || inst_type_i == U_TYPE || inst_type_i == J_TYPE);
 	assign mem_to_reg = (opcode == 7'b0000011);
 	assign rf_wdata = mem_to_reg ? (funct3 == 3'b000 ? {24'b0, mem_read_data_i[7:0]} : mem_read_data_i) : alu_result_i;
 	

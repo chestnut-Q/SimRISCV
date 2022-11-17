@@ -56,14 +56,14 @@ module inst_decoder (
 		aluADD = 0,
 		aluSUB = 1,
 		aluAND = 2,
-		aluOR = 3,
+		aluOR = 3, 
         aluXOR = 4,
         aluNOT = 5,
         aluSLL = 6,
         aluSRL = 7,
         aluSRA = 8,
         aluROL = 9,
-        jump = 10, //JÖ¸Áî£¬pc+4
+        jump = 10, //JÖ¸ï¿½î£¬pc+4
         aluLUI = 11
     } alu_funct_t;
 
@@ -72,7 +72,7 @@ module inst_decoder (
 
     always_comb begin
         case (opcode)
-            7'b0110011: begin// R-type  slt²»ÓÃÊµÏÖÂð?
+            7'b0110011: begin// R-type  sltï¿½ï¿½ï¿½ï¿½Êµï¿½ï¿½ï¿½ï¿½?
                 case (funct3)
                     3'b000: begin
                         case (funct7)
@@ -108,7 +108,7 @@ module inst_decoder (
             7'b0000011: alu_funct = aluADD; // LB, LW
             7'b1100011: alu_funct = aluSUB; // BEQ, BNE
             7'b0110111: alu_funct = aluLUI; // LUI
-            7'b0110111: alu_funct = aluADD; // AUIPC
+            7'b0010111: alu_funct = aluADD; // AUIPC
             7'b1101111: alu_funct = jump; // JAL
             7'b1100111: alu_funct = jump; // JALR
             default: alu_funct = aluADD;

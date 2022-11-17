@@ -66,6 +66,8 @@ module stall_controller (
             (mem_master_state_i == ALREADY || (mem_master_state_i == IDLE && !mem_master_ren && !mem_master_wen)))) begin
             stall_o = 5'b11111;
         end else begin
+            if(id_inst_i[6:0] == 7'b1100111)
+                flush_o[1] = 1'b1;
             if ((wb_rf_wen_i && wb_rd_i != 5'd0 && (wb_rd_i == id_rs1 || wb_rd_i == id_rs2))
                 || (mem_rf_wen && mem_rd != 5'd0 && (mem_rd == id_rs1 || mem_rd == id_rs2))
                 || (exe_rf_wen && exe_rd != 5'd0 && (exe_rd == id_rs1 || exe_rd == id_rs2))) begin
