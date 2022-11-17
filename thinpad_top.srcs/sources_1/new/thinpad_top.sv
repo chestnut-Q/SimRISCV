@@ -344,7 +344,7 @@ module thinpad_top (
     .alu_funct_i(id_alu_funct),
     .alu_src_i(id_alu_src),
     .imm_i(id_imm),
-    .rdata1_i(id_rf_rdata1),
+    .rdata1_i(rdata1_bypass == 2'd0 ? id_rf_rdata1 : rdata1_bypass == 2'd1 ? exe_alu_result : mem_rf_wdata),
     .rdata2_i(id_rf_rdata2),
     .inst_o(exe_inst),
     .inst_type_o(exe_inst_type),
@@ -392,6 +392,7 @@ module thinpad_top (
 	  .inst_type_i(mem_inst_type),
     .alu_result_i(mem_alu_result),
     .mem_read_data_i(mem_rdata), // 读内存的数据
+    .logic_rf_wdata_o(mem_rf_wdata),
     .rf_wen_o(wb_rf_wen),
     .rf_wdata_o(wb_rf_wdata),
     .rf_waddr_o(wb_rd)

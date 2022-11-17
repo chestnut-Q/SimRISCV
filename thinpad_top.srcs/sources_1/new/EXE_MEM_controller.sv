@@ -13,8 +13,8 @@ module EXE_MEM_controller (
 	output reg [31:0] inst_o,
 	output reg [2:0] inst_type_o,
 	output reg [31:0] alu_result_o,
-	output reg mem_ren_o, // �ǣ�1����0���� mem
-	output reg mem_wen_o, // �ǣ�1����0��д mem
+	output reg mem_ren_o,
+	output reg mem_wen_o,
 	output reg [31:0] mem_addr_o, 
 	output reg [31:0] mem_wdata_o,
 	output reg sel_byte_o
@@ -42,7 +42,7 @@ module EXE_MEM_controller (
 	assign rd = inst_i[11:7];
 	assign mem_wen = (opcode == 7'b0100011);
 	assign mem_ren = (opcode == 7'b0000011 && rd != 5'b00000);
-	assign mem_wdata = inst_i[14:12] == 3'b010 ? rdata2_i : {24'b0, rdata2_i[7:0]}; // TODO: �ɼ��ٱȽ�λ��
+	assign mem_wdata = inst_i[14:12] == 3'b010 ? rdata2_i : {24'b0, rdata2_i[7:0]};
 
 	always_ff @(posedge clk_i or posedge rst_i) begin
 		if (rst_i) begin

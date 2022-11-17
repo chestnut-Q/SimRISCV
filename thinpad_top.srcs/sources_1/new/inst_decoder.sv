@@ -5,7 +5,7 @@ module inst_decoder (
     output wire [4:0] rs1_o,
     output wire [4:0] rs2_o,
     output wire [4:0] rd_o,
-    output wire alu_src_o, // alu �ĵ� 2 �������� rdata_2��0������ imm��1��
+    output wire alu_src_o, // 0: rdata2; 1: imm
     output wire [3:0] alu_funct_o,
     output wire [2:0] inst_type_o,
     output reg [31:0] imm_o

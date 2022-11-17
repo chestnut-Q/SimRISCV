@@ -9,7 +9,7 @@ module MEM_WB_controller (
     input wire [31:0] inst_i,
 	input wire [2:0] inst_type_i,
     input wire [31:0] alu_result_i,
-    input wire [31:0] mem_read_data_i, // 璇诲唴瀛樼殑鏁版嵁
+    input wire [31:0] mem_read_data_i, // 读内存的数据
     output reg rf_wen_o,
     output reg [31:0] rf_wdata_o,
     output reg [4:0] rf_waddr_o
