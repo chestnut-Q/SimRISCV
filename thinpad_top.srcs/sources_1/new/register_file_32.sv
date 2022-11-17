@@ -8,8 +8,8 @@ module register_file_32 (
     input wire we_i,
     input wire [4:0] rs1_i,
     input wire [4:0] rs2_i,
-    output wire [31:0] rdata1_o,
-    output wire [31:0] rdata2_o
+    output reg [31:0] rdata1_o,
+    output reg [31:0] rdata2_o
 );
 
     reg [31:0] RF_data[31:1];

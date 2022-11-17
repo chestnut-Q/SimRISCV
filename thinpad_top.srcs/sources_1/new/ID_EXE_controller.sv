@@ -21,7 +21,8 @@ module ID_EXE_controller (
 	output reg alu_src_o,
 	output reg [31:0] imm_o,
 	output reg [31:0] rdata1_o,
-	output reg [31:0] rdata2_o
+	output reg [31:0] rdata2_o,
+	output reg [31:0] PC_o
 );
 
 	always_ff @(posedge clk_i or posedge rst_i) begin
@@ -47,6 +48,7 @@ module ID_EXE_controller (
 			imm_o <= imm_i;
 			rdata1_o <= rdata1_i;
 			rdata2_o <= rdata2_i;
+			PC_o <= PC_i;
 		end
 	end
 

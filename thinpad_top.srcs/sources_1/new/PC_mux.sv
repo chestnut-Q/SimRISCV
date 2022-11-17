@@ -5,8 +5,9 @@ module PC_mux(
     input wire rst_i,
     input wire [31:0] rst_addr_i,
     input wire stall_i,
-    input wire PC_src_i,  // PC 跳转选项，+4（0）或者跳转（1）
+    input wire PC_src_i,
     input wire [31:0] branch_addr_i,
+    input wire jump_i, // whether to jump
     output reg [31:0] PC_o
 );
 
@@ -16,12 +17,17 @@ module PC_mux(
 		end else if (stall_i) begin
             PC_o <= PC_o;
         end else begin
-            if (PC_src_i) begin
-                PC_o <= branch_addr_i;
-            end else begin
-                PC_o <= PC_o + 4;
+            if (!jump_i) begin
+                if (PC_src_i) begin
+                    PC_o <= branch_addr_i;
+                end else begin
+                    PC_o <= PC_o + 4;
+                end
             end
-		end
+            else begin // J指令
+                PC_o <= branch_addr_i;
+            end
+        end
 	end
 
 endmodule
