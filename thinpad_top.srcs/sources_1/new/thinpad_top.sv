@@ -294,12 +294,17 @@ module thinpad_top (
     .rdata2_bypass_o(rdata2_bypass)
   );
 
+  logic [31:0] after_bypass_id_rf_rdata1;
+  logic [31:0] after_bypass_id_rf_rdata2;
+  assign after_bypass_id_rf_rdata1 = rdata1_bypass == 2'd0 ? id_rf_rdata1 : (rdata1_bypass == 2'd1 ? exe_alu_result : mem_rf_wdata);
+  assign after_bypass_id_rf_rdata2 = rdata2_bypass == 2'd0 ? id_rf_rdata2 : (rdata2_bypass == 2'd1 ? exe_alu_result : mem_rf_wdata);
+
   logic branch;
   logic jump;
   assign branch = exe_inst_type == 3'b010 && ((exe_inst[14:12] == 3'b000 && exe_alu_zero)||(exe_inst[14:12] == 3'b001 && !exe_alu_zero));
-  assign jump = !branch && (if_inst[6:0] == 7'b1101111 || id_inst[6:0] == 7'b1100111);
+  assign jump = !branch && (if_inst[6:0] === 7'b1101111 || id_inst[6:0] === 7'b1100111);
   logic [31:0] jump_addr;
-  assign jump_addr = id_inst[6:0] == 7'b1100111 ? (id_rf_rdata1 + id_imm) & (-2) : if_PC + {{19{if_inst[31]}}, if_inst[31], if_inst[19:12], if_inst[20], if_inst[30:21], 1'b0}; 
+  assign jump_addr = id_inst[6:0] == 7'b1100111 ? (after_bypass_id_rf_rdata1 + id_imm) & (-2) : if_PC + {{19{if_inst[31]}}, if_inst[31], if_inst[19:12], if_inst[20], if_inst[30:21], 1'b0}; 
 
   PC_mux PC_mux(
     .clk_i(sys_clk),
@@ -358,8 +363,8 @@ module thinpad_top (
     .alu_funct_i(id_alu_funct),
     .alu_src_i(id_alu_src),
     .imm_i(id_imm),
-    .rdata1_i(rdata1_bypass == 2'd0 ? id_rf_rdata1 : rdata1_bypass == 2'd1 ? exe_alu_result : mem_rf_wdata),
-    .rdata2_i(rdata2_bypass == 2'd0 ? id_rf_rdata2 : rdata1_bypass == 2'd1 ? exe_alu_result : mem_rf_wdata),
+    .rdata1_i(after_bypass_id_rf_rdata1),
+    .rdata2_i(after_bypass_id_rf_rdata2),
     .inst_o(exe_inst),
     .inst_type_o(exe_inst_type),
     .branch_addr_o(exe_branch_addr), 
