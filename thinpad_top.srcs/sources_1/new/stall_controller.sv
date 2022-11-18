@@ -16,8 +16,8 @@ module stall_controller (
     input wire exe_alu_zero_i,
     output reg [4:0] stall_o,
     output reg [4:0] flush_o,
-    output reg [1:0] rdata1_bypass_o, // ID �׶� rdata1 bypass mux��0: rdata1; 1: exe_rd; 2: mem_rd
-    output reg [1:0] rdata2_bypass_o // ID �׶� rdata2 bypass mux��0: rdata2; 1: exe_rd; 2: mem_rd
+    output reg [1:0] rdata1_bypass_o, // ID ??? rdata1 bypass mux??0: rdata1; 1: exe_rd; 2: mem_rd
+    output reg [1:0] rdata2_bypass_o // ID ??? rdata2 bypass mux??0: rdata2; 1: exe_rd; 2: mem_rd
 );
 
 	typedef enum logic [2:0] {
@@ -37,8 +37,8 @@ module stall_controller (
     logic mem_rf_wen;
     logic exe_is_load_inst;
 
-    assign exe_rf_wen = (exe_inst_type_i == R_TYPE || exe_inst_type_i == I_TYPE || exe_inst_type_i == U_TYPE);
-    assign mem_rf_wen = (mem_inst_type_i == R_TYPE || mem_inst_type_i == I_TYPE || mem_inst_type_i == U_TYPE);
+    assign exe_rf_wen = (exe_inst_type_i == R_TYPE || exe_inst_type_i == I_TYPE || exe_inst_type_i == U_TYPE || exe_inst_type_i == J_TYPE);
+    assign mem_rf_wen = (mem_inst_type_i == R_TYPE || mem_inst_type_i == I_TYPE || mem_inst_type_i == U_TYPE || mem_inst_type_i == J_TYPE);
     assign exe_rd = exe_inst_i[11:7];
     assign mem_rd = mem_inst_i[11:7];
     assign exe_is_load_inst = (exe_inst_i[6:0] == 7'b0000011);
@@ -49,7 +49,7 @@ module stall_controller (
         if (id_inst_type_i == R_TYPE || id_inst_type_i == S_TYPE || id_inst_type_i == B_TYPE) begin
             id_rs1 = id_inst_i[19:15];
             id_rs2 = id_inst_i[24:20];
-        end else if (id_inst_type_i == I_TYPE) begin
+        end else if (id_inst_type_i == I_TYPE || id_inst_i[6:0] == 7'b1100111) begin
             id_rs1 = id_inst_i[19:15];
         end
     end
