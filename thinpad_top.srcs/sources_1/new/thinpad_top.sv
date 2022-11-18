@@ -306,7 +306,7 @@ module thinpad_top (
   // assign jump = !branch && (id_inst[6:0] === 7'b1101111 || id_inst[6:0] === 7'b1100111);
   // logic [31:0] jump_addr;
   // assign jump_addr = id_inst[6:0] == 7'b1100111 ? (after_bypass_id_rf_rdata1 + id_imm) & (-2) : id_PC + id_imm; 
-  assign branch = flush_o[1];
+  assign branch = flush[1];
   assign id_branch_addr = id_inst[6:0] == 7'b1100111 ? (after_bypass_id_rf_rdata1 + id_imm) & (-2) : id_PC + id_imm;
 
   PC_mux PC_mux(
@@ -339,7 +339,7 @@ module thinpad_top (
     .alu_src_o(id_alu_src), // alu �ĵ� 2 �������� rdata_2��0������ imm��1��
     .alu_funct_o(id_alu_funct),
     .inst_type_o(id_inst_type),
-    .imm_o(id_imm),
+    .imm_o(id_imm)
   );
 
   register_file_32 register_file (
