@@ -8,7 +8,8 @@ module inst_decoder (
     output wire alu_src_o, // 0: rdata2; 1: imm
     output wire [3:0] alu_funct_o,
     output wire [2:0] inst_type_o,
-    output reg [31:0] imm_o
+    output reg [31:0] imm_o,
+    output reg [31:0] branch_addr_o
 );
 
 	typedef enum logic [2:0] {
@@ -139,5 +140,6 @@ module inst_decoder (
         endcase
     end 
     /* imm gen end */
+
 
 endmodule

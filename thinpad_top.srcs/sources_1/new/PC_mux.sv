@@ -17,15 +17,10 @@ module PC_mux(
 		end else if (stall_i) begin
             PC_o <= PC_o;
         end else begin
-            if (!jump_i) begin
-                if (PC_src_i) begin
-                    PC_o <= branch_addr_i;
-                end else begin
-                    PC_o <= PC_o + 4;
-                end
-            end
-            else begin // JÖ¸Áî
+            if (PC_src_i) begin
                 PC_o <= branch_addr_i;
+            end else begin
+                PC_o <= PC_o + 4;
             end
         end
 	end

@@ -245,7 +245,7 @@ module thinpad_top (
   logic [31:0] exe_PC;
   logic [31:0] exe_inst;
   logic [2:0] exe_inst_type;
-  logic [31:0] exe_branch_addr;
+  logic [31:0] id_branch_addr;
   logic [3:0] exe_alu_funct;
   logic exe_alu_src; // alu �ĵ� 2 �������� rdata_2��0���� imm��1��
   logic [31:0] exe_imm;
@@ -288,6 +288,8 @@ module thinpad_top (
     .wb_rd_i(wb_rd),
     .wb_rf_wen_i(wb_rf_wen),
     .exe_alu_zero_i(exe_alu_zero),
+    .id_rs1_data_i(after_bypass_id_rf_rdata1),
+    .id_rs2_data_i(after_bypass_id_rf_rdata2),
     .stall_o(stall),
     .flush_o(flush),
     .rdata1_bypass_o(rdata1_bypass),
@@ -300,20 +302,20 @@ module thinpad_top (
   assign after_bypass_id_rf_rdata2 = rdata2_bypass == 2'd0 ? id_rf_rdata2 : (rdata2_bypass == 2'd1 ? exe_alu_result : mem_rf_wdata);
 
   logic branch;
-  logic jump;
-  assign branch = exe_inst_type === 3'b010 && ((exe_inst[14:12] === 3'b000 && exe_alu_zero===1)||(exe_inst[14:12] === 3'b001 && exe_alu_zero===0));
-  assign jump = !branch && (id_inst[6:0] === 7'b1101111 || id_inst[6:0] === 7'b1100111);
-  logic [31:0] jump_addr;
-  assign jump_addr = id_inst[6:0] == 7'b1100111 ? (after_bypass_id_rf_rdata1 + id_imm) & (-2) : id_PC + {{19{id_inst[31]}}, id_inst[31], id_inst[19:12], id_inst[20], id_inst[30:21], 1'b0}; 
+  // assign branch = exe_inst_type === 3'b010 && ((exe_inst[14:12] === 3'b000 && exe_alu_zero===1)||(exe_inst[14:12] === 3'b001 && exe_alu_zero===0));
+  // assign jump = !branch && (id_inst[6:0] === 7'b1101111 || id_inst[6:0] === 7'b1100111);
+  // logic [31:0] jump_addr;
+  // assign jump_addr = id_inst[6:0] == 7'b1100111 ? (after_bypass_id_rf_rdata1 + id_imm) & (-2) : id_PC + id_imm; 
+  assign branch = flush_o[1];
+  assign id_branch_addr = id_inst[6:0] == 7'b1100111 ? (after_bypass_id_rf_rdata1 + id_imm) & (-2) : id_PC + id_imm;
 
   PC_mux PC_mux(
     .clk_i(sys_clk),
     .rst_i(sys_rst),
     .rst_addr_i(32'h8000_0000),
     .stall_i(stall[0]),
-    .PC_src_i(branch),// BEQ, BNE
-    .branch_addr_i(jump ? jump_addr : exe_branch_addr),
-    .jump_i(jump),// J
+    .PC_src_i(branch),// BEQ, BNE, J
+    .branch_addr_i(id_branch_addr),
     .PC_o(if_PC)
   );
 
@@ -337,7 +339,7 @@ module thinpad_top (
     .alu_src_o(id_alu_src), // alu �ĵ� 2 �������� rdata_2��0������ imm��1��
     .alu_funct_o(id_alu_funct),
     .inst_type_o(id_inst_type),
-    .imm_o(id_imm)
+    .imm_o(id_imm),
   );
 
   register_file_32 register_file (
@@ -367,7 +369,6 @@ module thinpad_top (
     .rdata2_i(after_bypass_id_rf_rdata2),
     .inst_o(exe_inst),
     .inst_type_o(exe_inst_type),
-    .branch_addr_o(exe_branch_addr), 
     .alu_funct_o(exe_alu_funct),
     .alu_src_o(exe_alu_src), 
     .imm_o(exe_imm),

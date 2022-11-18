@@ -14,6 +14,8 @@ module stall_controller (
     input wire [4:0] wb_rd_i,
     input wire wb_rf_wen_i,
     input wire exe_alu_zero_i,
+    input wire [31:0] id_rs1_data_i,
+    input wire [31:0] id_rs2_data_i,
     output reg [4:0] stall_o,
     output reg [4:0] flush_o,
     output reg [1:0] rdata1_bypass_o, // ID ??? rdata1 bypass mux??0: rdata1; 1: exe_rd; 2: mem_rd
@@ -26,7 +28,8 @@ module stall_controller (
 		B_TYPE = 2,
 		U_TYPE = 3,
 		S_TYPE = 4,
-		J_TYPE = 5
+		J_TYPE = 5,
+        NONE = 6
 	} inst_type_t;
 
     logic [4:0] id_rs1;
@@ -70,13 +73,14 @@ module stall_controller (
             (mem_master_state_i === ALREADY || (mem_master_state_i === IDLE && !mem_master_ren && !mem_master_wen)))) begin
             stall_o = 5'b11111;
         end else begin
-            if (id_inst_type_i === 3'b101) begin // j
+            if (id_inst_type_i === J_TYPE) begin // j
                 flush_o[1] = 1'b1;
             end
-            if (exe_inst_type_i === B_TYPE) begin
-                if ((exe_inst_i[14:12] === 3'b000 && exe_alu_zero_i) || (exe_inst_i[14:12] === 3'b001 && !exe_alu_zero_i)) // beq && bne
-                    flush_o[2:1] = 2'b11;
-            end else if (exe_is_load_inst && exe_rf_wen && exe_rd != 5'd0 && (exe_rd === id_rs1 || exe_rd === id_rs2)) begin
+            else if (id_inst_type_i === B_TYPE) begin
+                if ((id_inst_i[14:12] === 3'b000 && id_rs1_data_i == id_rs2_data_i) || (exe_inst_i[14:12] === 3'b001 && id_rs1_data_i != id_rs2_data_i)) // beq && bne
+                    flush_o[1] = 1'b1;
+            end  
+            if (exe_is_load_inst && exe_rf_wen && exe_rd != 5'd0 && (exe_rd === id_rs1 || exe_rd === id_rs2)) begin
                 stall_o[1:0] = 2'b11;
                 flush_o[2] = 1'b1;
             end
