@@ -3,55 +3,55 @@ module tb;
 
   wire clk_50M, clk_11M0592;
 
-  reg push_btn;   // BTN5 ��ť���أ���������·������ʱΪ 1
-  reg reset_btn;  // BTN6 ��λ��ť����������·������ʱΪ 1
+  reg push_btn;   // BTN5 按钮开关，带消抖电路，按下时为 1
+  reg reset_btn;  // BTN6 复位按钮，带消抖电路，按下时为 1
 
-  reg [3:0] touch_btn; // BTN1~BTN4����ť���أ�����ʱΪ 1
-  reg [31:0] dip_sw;   // 32 λ���뿪�أ�������ON��ʱΪ 1
+  reg [3:0] touch_btn; // BTN1~BTN4，按钮开关，按下时为 1
+  reg [31:0] dip_sw;   // 32 位拨码开关，拨到“ON”时为 1
 
-  wire [15:0] leds;  // 16 λ LED�����ʱ 1 ����
-  wire [7:0] dpy0;   // ����ܵ�λ�źţ�����С���㣬��� 1 ����
-  wire [7:0] dpy1;   // ����ܸ�λ�źţ�����С���㣬��� 1 ����
+  wire [15:0] leds;  // 16 位 LED，输出时 1 点亮
+  wire [7:0] dpy0;   // 数码管低位信号，包括小数点，输出 1 点亮
+  wire [7:0] dpy1;   // 数码管高位信号，包括小数点，输出 1 点亮
 
-  wire txd;  // ֱ�����ڷ��Ͷ�
-  wire rxd;  // ֱ�����ڽ��ն�
+  wire txd;  // 直连串口发送端
+  wire rxd;  // 直连串口接收端
 
-  wire [31:0] base_ram_data;  // BaseRAM ���ݣ��� 8 λ�� CPLD ���ڿ���������
-  wire [19:0] base_ram_addr;  // BaseRAM ��ַ
-  wire[3:0] base_ram_be_n;    // BaseRAM �ֽ�ʹ�ܣ�����Ч�������ʹ���ֽ�ʹ�ܣ��뱣��Ϊ 0
-  wire base_ram_ce_n;  // BaseRAM Ƭѡ������Ч
-  wire base_ram_oe_n;  // BaseRAM ��ʹ�ܣ�����Ч
-  wire base_ram_we_n;  // BaseRAM дʹ�ܣ�����Ч
+  wire [31:0] base_ram_data;  // BaseRAM 数据，低 8 位与 CPLD 串口控制器共享
+  wire [19:0] base_ram_addr;  // BaseRAM 地址
+  wire[3:0] base_ram_be_n;    // BaseRAM 字节使能，低有效。如果不使用字节使能，请保持为 0
+  wire base_ram_ce_n;  // BaseRAM 片选，低有效
+  wire base_ram_oe_n;  // BaseRAM 读使能，低有效
+  wire base_ram_we_n;  // BaseRAM 写使能，低有效
 
-  wire [31:0] ext_ram_data;  // ExtRAM ����
-  wire [19:0] ext_ram_addr;  // ExtRAM ��ַ
-  wire[3:0] ext_ram_be_n;    // ExtRAM �ֽ�ʹ�ܣ�����Ч�������ʹ���ֽ�ʹ�ܣ��뱣��Ϊ 0
-  wire ext_ram_ce_n;  // ExtRAM Ƭѡ������Ч
-  wire ext_ram_oe_n;  // ExtRAM ��ʹ�ܣ�����Ч
-  wire ext_ram_we_n;  // ExtRAM дʹ�ܣ�����Ч
+  wire [31:0] ext_ram_data;  // ExtRAM 数据
+  wire [19:0] ext_ram_addr;  // ExtRAM 地址
+  wire[3:0] ext_ram_be_n;    // ExtRAM 字节使能，低有效。如果不使用字节使能，请保持为 0
+  wire ext_ram_ce_n;  // ExtRAM 片选，低有效
+  wire ext_ram_oe_n;  // ExtRAM 读使能，低有效
+  wire ext_ram_we_n;  // ExtRAM 写使能，低有效
 
-  wire [22:0] flash_a;  // Flash ��ַ��a0 ���� 8bit ģʽ��Ч��16bit ģʽ������
-  wire [15:0] flash_d;  // Flash ����
-  wire flash_rp_n;   // Flash ��λ�źţ�����Ч
-  wire flash_vpen;   // Flash д�����źţ��͵�ƽʱ���ܲ�������д
-  wire flash_ce_n;   // Flash Ƭѡ�źţ�����Ч
-  wire flash_oe_n;   // Flash ��ʹ���źţ�����Ч
-  wire flash_we_n;   // Flash дʹ���źţ�����Ч
-  wire flash_byte_n; // Flash 8bit ģʽѡ�񣬵���Ч����ʹ�� flash �� 16 λģʽʱ����Ϊ 1
+  wire [22:0] flash_a;  // Flash 地址，a0 仅在 8bit 模式有效，16bit 模式无意义
+  wire [15:0] flash_d;  // Flash 数据
+  wire flash_rp_n;   // Flash 复位信号，低有效
+  wire flash_vpen;   // Flash 写保护信号，低电平时不能擦除、烧写
+  wire flash_ce_n;   // Flash 片选信号，低有效
+  wire flash_oe_n;   // Flash 读使能信号，低有效
+  wire flash_we_n;   // Flash 写使能信号，低有效
+  wire flash_byte_n; // Flash 8bit 模式选择，低有效。在使用 flash 的 16 位模式时请设为 1
 
-  wire uart_rdn;  // �������źţ�����Ч
-  wire uart_wrn;  // д�����źţ�����Ч
-  wire uart_dataready;  // ��������׼����
-  wire uart_tbre;  // �������ݱ�־
-  wire uart_tsre;  // ���ݷ�����ϱ�־
+  wire uart_rdn;  // 读串口信号，低有效
+  wire uart_wrn;  // 写串口信号，低有效
+  wire uart_dataready;  // 串口数据准备好
+  wire uart_tbre;  // 发送数据标志
+  wire uart_tsre;  // 数据发送完毕标志
 
-  // Windows ��Ҫע��·���ָ�����ת�壬���� "D:\\foo\\bar.bin"
-  parameter BASE_RAM_INIT_FILE = "C:\\rv-2022\\rv-2022\\asmcode\\sum.bin"; // BaseRAM ��ʼ���ļ������޸�Ϊʵ�ʵľ���·��
-  parameter EXT_RAM_INIT_FILE = "C:\\code\\project\\cod22-grp12\\testcases\\src3.bin";  // ExtRAM ��ʼ���ļ������޸�Ϊʵ�ʵľ���·��
-  parameter FLASH_INIT_FILE = "/tmp/kernel.elf";  // Flash ��ʼ���ļ������޸�Ϊʵ�ʵľ���·��
+  // Windows 需要注意路径分隔符的转义，例如 "D:\\foo\\bar.bin"
+  parameter BASE_RAM_INIT_FILE = "C:\\code\\rv-2022\\supervisor-rv\\kernel-test\\kernel.bin"; // BaseRAM 初始化文件，请修改为实际的绝对路径
+  parameter EXT_RAM_INIT_FILE = "C:\\code\\project\\cod22-grp12\\testcases\\kernel.bin";  // ExtRAM 初始化文件，请修改为实际的绝对路径
+  parameter FLASH_INIT_FILE = "/tmp/kernel.elf";  // Flash 初始化文件，请修改为实际的绝对路径
 
   initial begin
-    // ����������Զ�������������У����磺
+    // 在这里可以自定义测试输入序列，例如：
     dip_sw = 32'h2;
     touch_btn = 0;
     reset_btn = 0;
@@ -62,22 +62,25 @@ module tb;
     #100;
     reset_btn = 0;
     // for (integer i = 0; i < 20; i = i + 1) begin
-    //   #100;  // �ȴ� 100ns
-    //   push_btn = 1;  // ���� push_btn ��ť
-    //   #100;  // �ȴ� 100ns
-    //   push_btn = 0;  // �ɿ� push_btn ��ť
+    //   #100;  // 等待 100ns
+    //   push_btn = 1;  // 按下 push_btn 按钮
+    //   #100;  // 等待 100ns
+    //   push_btn = 0;  // 松开 push_btn 按钮
     // end
   
-    // // ģ�� PC ͨ��ֱ�����ڣ��� FPGA �����ַ�
+    // // 模拟 PC 通过直连串口，向 FPGA 发送字符
     // uart.pc_send_byte(8'h32); // ASCII '2'
     // #10000;
     // uart.pc_send_byte(8'h33); // ASCII '3'
 
-    #100000;
+    #5000000;
+    uart.pc_send_byte(8'h44);
+
+    #1000000;
     $finish;
   end
 
-  // �������û����
+  // 待测试用户设计
   thinpad_top dut (
       .clk_50M(clk_50M),
       .clk_11M0592(clk_11M0592),
@@ -116,12 +119,12 @@ module tb;
       .flash_byte_n(flash_byte_n),
       .flash_we_n(flash_we_n)
   );
-  // ʱ��Դ
+  // 时钟源
   clock osc (
       .clk_11M0592(clk_11M0592),
       .clk_50M    (clk_50M)
   );
-  // CPLD ���ڷ���ģ��
+  // CPLD 串口仿真模型
   cpld_model cpld (
       .clk_uart(clk_11M0592),
       .uart_rdn(uart_rdn),
@@ -131,12 +134,12 @@ module tb;
       .uart_tsre(uart_tsre),
       .data(base_ram_data[7:0])
   );
-  // ֱ�����ڷ���ģ��
+  // 直连串口仿真模型
   uart_model uart (
     .rxd (txd),
     .txd (rxd)
   );
-  // BaseRAM ����ģ��
+  // BaseRAM 仿真模型
   sram_model base1 (
       .DataIO(base_ram_data[15:0]),
       .Address(base_ram_addr[19:0]),
@@ -155,7 +158,7 @@ module tb;
       .LB_n(base_ram_be_n[2]),
       .UB_n(base_ram_be_n[3])
   );
-  // ExtRAM ����ģ��
+  // ExtRAM 仿真模型
   sram_model ext1 (
       .DataIO(ext_ram_data[15:0]),
       .Address(ext_ram_addr[19:0]),
@@ -174,7 +177,7 @@ module tb;
       .LB_n(ext_ram_be_n[2]),
       .UB_n(ext_ram_be_n[3])
   );
-  // Flash ����ģ��
+  // Flash 仿真模型
   x28fxxxp30 #(
       .FILENAME_MEM(FLASH_INIT_FILE)
   ) flash (
@@ -200,7 +203,7 @@ module tb;
     $stop;
   end
 
-  // ���ļ����� BaseRAM
+  // 从文件加载 BaseRAM
   initial begin
     reg [31:0] tmp_array[0:1048575];
     integer n_File_ID, n_Init_Size;
@@ -222,7 +225,7 @@ module tb;
     end
   end
 
-  // ���ļ����� ExtRAM
+  // 从文件加载 ExtRAM
   initial begin
     reg [31:0] tmp_array[0:1048575];
     integer n_File_ID, n_Init_Size;
