@@ -377,7 +377,7 @@ module thinpad_top (
   );
 
   ALU_32 ALU(
-    .a((exe_inst[6:0] == 7'b0010111 || exe_inst_type == 3'b101) ? exe_PC : exe_rdata1),//AUIPC
+    .a((exe_inst[6:0] === 7'b0010111 || exe_inst_type === 3'b101) ? exe_PC : exe_rdata1),//AUIPC
     .b(exe_alu_src ? exe_imm : exe_rdata2),
     .op(exe_alu_funct),
     .y(exe_alu_result),

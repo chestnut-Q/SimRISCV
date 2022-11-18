@@ -37,19 +37,19 @@ module stall_controller (
     logic mem_rf_wen;
     logic exe_is_load_inst;
 
-    assign exe_rf_wen = (exe_inst_type_i == R_TYPE || exe_inst_type_i == I_TYPE || exe_inst_type_i == U_TYPE || exe_inst_type_i == J_TYPE);
-    assign mem_rf_wen = (mem_inst_type_i == R_TYPE || mem_inst_type_i == I_TYPE || mem_inst_type_i == U_TYPE || mem_inst_type_i == J_TYPE);
+    assign exe_rf_wen = (exe_inst_type_i === R_TYPE || exe_inst_type_i === I_TYPE || exe_inst_type_i === U_TYPE || exe_inst_type_i === J_TYPE);
+    assign mem_rf_wen = (mem_inst_type_i === R_TYPE || mem_inst_type_i === I_TYPE || mem_inst_type_i === U_TYPE || mem_inst_type_i === J_TYPE);
     assign exe_rd = exe_inst_i[11:7];
     assign mem_rd = mem_inst_i[11:7];
-    assign exe_is_load_inst = (exe_inst_i[6:0] == 7'b0000011);
+    assign exe_is_load_inst = (exe_inst_i[6:0] === 7'b0000011);
 
     always_comb begin
         id_rs1 = 5'd0;
         id_rs2 = 5'd0;
-        if (id_inst_type_i == R_TYPE || id_inst_type_i == S_TYPE || id_inst_type_i == B_TYPE) begin
+        if (id_inst_type_i === R_TYPE || id_inst_type_i === S_TYPE || id_inst_type_i === B_TYPE) begin
             id_rs1 = id_inst_i[19:15];
             id_rs2 = id_inst_i[24:20];
-        end else if (id_inst_type_i == I_TYPE || id_inst_i[6:0] == 7'b1100111) begin
+        end else if (id_inst_type_i === I_TYPE || id_inst_i[6:0] === 7'b1100111) begin
             id_rs1 = id_inst_i[19:15];
         end
     end
@@ -66,17 +66,17 @@ module stall_controller (
     always_comb begin
         stall_o = 5'b00000;
         flush_o = 5'b00000;
-        if (!(if_master_state_i == ALREADY &&
-            (mem_master_state_i == ALREADY || (mem_master_state_i == IDLE && !mem_master_ren && !mem_master_wen)))) begin
+        if (!(if_master_state_i === ALREADY &&
+            (mem_master_state_i === ALREADY || (mem_master_state_i === IDLE && !mem_master_ren && !mem_master_wen)))) begin
             stall_o = 5'b11111;
         end else begin
-            if (id_inst_type_i == 3'b101) begin // j
+            if (id_inst_type_i === 3'b101) begin // j
                 flush_o[1] = 1'b1;
             end
-            if (exe_inst_type_i == B_TYPE) begin
-                if ((exe_inst_i[14:12] == 3'b000 && exe_alu_zero_i) || (exe_inst_i[14:12] == 3'b001 && !exe_alu_zero_i)) // beq && bne
+            if (exe_inst_type_i === B_TYPE) begin
+                if ((exe_inst_i[14:12] === 3'b000 && exe_alu_zero_i) || (exe_inst_i[14:12] === 3'b001 && !exe_alu_zero_i)) // beq && bne
                     flush_o[2:1] = 2'b11;
-            end else if (exe_is_load_inst && exe_rf_wen && exe_rd != 5'd0 && (exe_rd == id_rs1 || exe_rd == id_rs2)) begin
+            end else if (exe_is_load_inst && exe_rf_wen && exe_rd != 5'd0 && (exe_rd === id_rs1 || exe_rd === id_rs2)) begin
                 stall_o[1:0] = 2'b11;
                 flush_o[2] = 1'b1;
             end
@@ -86,16 +86,16 @@ module stall_controller (
     // always_comb begin
     //     stall_o = 5'b00000;
     //     flush_o = 5'b00000;
-    //     if (!(if_master_state_i == ALREADY &&
-    //         (mem_master_state_i == ALREADY || (mem_master_state_i == IDLE && !mem_master_ren && !mem_master_wen)))) begin
+    //     if (!(if_master_state_i === ALREADY &&
+    //         (mem_master_state_i === ALREADY || (mem_master_state_i === IDLE && !mem_master_ren && !mem_master_wen)))) begin
     //         stall_o = 5'b11111;
     //     end else begin
-    //         if ((wb_rf_wen_i && wb_rd_i != 5'd0 && (wb_rd_i == id_rs1 || wb_rd_i == id_rs2))
-    //             || (mem_rf_wen && mem_rd != 5'd0 && (mem_rd == id_rs1 || mem_rd == id_rs2))
-    //             || (exe_rf_wen && exe_rd != 5'd0 && (exe_rd == id_rs1 || exe_rd == id_rs2))) begin
+    //         if ((wb_rf_wen_i && wb_rd_i != 5'd0 && (wb_rd_i === id_rs1 || wb_rd_i === id_rs2))
+    //             || (mem_rf_wen && mem_rd != 5'd0 && (mem_rd === id_rs1 || mem_rd === id_rs2))
+    //             || (exe_rf_wen && exe_rd != 5'd0 && (exe_rd === id_rs1 || exe_rd === id_rs2))) begin
     //                 stall_o[1:0] = 2'b11;
     //                 flush_o[2] = 1'b1;
-    //             end else if (exe_inst_type_i == B_TYPE && exe_alu_zero_i) begin
+    //             end else if (exe_inst_type_i === B_TYPE && exe_alu_zero_i) begin
     //                 flush_o[2:1] = 2'b11;
     //             end
     //     end
@@ -103,17 +103,17 @@ module stall_controller (
 
     always_comb begin
         rdata1_bypass_o = 2'd0;
-        if (mem_rf_wen && mem_rd != 5'd0 && mem_rd == id_rs1) begin
+        if (mem_rf_wen && mem_rd != 5'd0 && mem_rd === id_rs1) begin
             rdata1_bypass_o = 2'd2;
         end
-        if (!exe_is_load_inst && exe_rf_wen && exe_rd != 5'd0 && exe_rd == id_rs1) begin
+        if (!exe_is_load_inst && exe_rf_wen && exe_rd != 5'd0 && exe_rd === id_rs1) begin
             rdata1_bypass_o = 2'd1;
         end
         rdata2_bypass_o = 2'd0;
-        if (mem_rf_wen && mem_rd != 5'd0 && mem_rd == id_rs2) begin
+        if (mem_rf_wen && mem_rd != 5'd0 && mem_rd === id_rs2) begin
             rdata2_bypass_o = 2'd2;
         end
-        if (!exe_is_load_inst && exe_rf_wen && exe_rd != 5'd0 && exe_rd == id_rs2) begin
+        if (!exe_is_load_inst && exe_rf_wen && exe_rd != 5'd0 && exe_rd === id_rs2) begin
             rdata2_bypass_o = 2'd1;
         end
     end

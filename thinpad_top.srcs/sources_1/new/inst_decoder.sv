@@ -30,15 +30,15 @@ module inst_decoder (
     assign funct7 = inst_i[31:25];
 
 	always_comb begin
-		if (opcode == 7'b0110011) begin
+		if (opcode === 7'b0110011) begin
 			inst_type = R_TYPE;
-		end else if (opcode == 7'b0010011 || opcode == 7'b0000011) begin
+		end else if (opcode === 7'b0010011 || opcode === 7'b0000011) begin
 			inst_type = I_TYPE;
-		end else if (opcode == 7'b1100011) begin
+		end else if (opcode === 7'b1100011) begin
 			inst_type = B_TYPE;
-		end else if (opcode == 7'b0110111 || opcode == 7'b0010111) begin
+		end else if (opcode === 7'b0110111 || opcode === 7'b0010111) begin
 			inst_type = U_TYPE;
-		end else if (opcode == 7'b0100011) begin
+		end else if (opcode === 7'b0100011) begin
 			inst_type = S_TYPE;
 		end else begin
 			inst_type = J_TYPE;
@@ -48,7 +48,7 @@ module inst_decoder (
     assign rs1_o = inst_i[19:15];
     assign rs2_o = inst_i[24:20];
     assign rd_o = inst_i[11:7];
-    assign alu_src_o = (inst_type == I_TYPE || inst_type == S_TYPE || inst_type == U_TYPE);
+    assign alu_src_o = (inst_type === I_TYPE || inst_type === S_TYPE || inst_type === U_TYPE);
     assign inst_type_o = inst_type;
     
     /* alu_funct begin */
@@ -63,7 +63,7 @@ module inst_decoder (
         aluSRL = 7,
         aluSRA = 8,
         aluROL = 9,
-        jump = 10, //Jָ�pc+4
+        jump = 10, //Jָ�pc+4
         aluLUI = 11
     } alu_funct_t;
 

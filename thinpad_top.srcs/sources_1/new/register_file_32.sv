@@ -15,15 +15,15 @@ module register_file_32 (
     reg [31:0] RF_data[31:1];
 
     always_comb begin
-        if (we_i && rd_i != 5'b00000 && rs1_i == rd_i) begin
+        if (we_i && rd_i != 5'b00000 && rs1_i === rd_i) begin
             rdata1_o = wdata_i;
         end else begin
-            rdata1_o = (rs1_i == 5'b00000) ? 32'h0 : RF_data[rs1_i];
+            rdata1_o = (rs1_i === 5'b00000) ? 32'h0 : RF_data[rs1_i];
         end
-        if (we_i && rd_i != 5'b00000 && rs2_i == rd_i) begin
+        if (we_i && rd_i != 5'b00000 && rs2_i === rd_i) begin
             rdata2_o = wdata_i;
         end else begin
-            rdata2_o = (rs2_i == 5'b00000) ? 32'h0 : RF_data[rs2_i];
+            rdata2_o = (rs2_i === 5'b00000) ? 32'h0 : RF_data[rs2_i];
         end
     end
 

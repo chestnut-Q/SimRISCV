@@ -40,9 +40,9 @@ module EXE_MEM_controller (
 	assign opcode = inst_i[6:0];
 	assign rs2 = inst_i[24:20];
 	assign rd = inst_i[11:7];
-	assign mem_wen = (opcode == 7'b0100011);
-	assign mem_ren = (opcode == 7'b0000011 && rd != 5'b00000);
-	assign mem_wdata = inst_i[14:12] == 3'b010 ? rdata2_i : {24'b0, rdata2_i[7:0]};
+	assign mem_wen = (opcode === 7'b0100011);
+	assign mem_ren = (opcode === 7'b0000011 && rd != 5'b00000);
+	assign mem_wdata = inst_i[14:12] === 3'b010 ? rdata2_i : {24'b0, rdata2_i[7:0]};
 
 	always_ff @(posedge clk_i or posedge rst_i) begin
 		if (rst_i) begin
@@ -68,7 +68,7 @@ module EXE_MEM_controller (
 			mem_wen_o <= mem_wen;
 			mem_addr_o <= alu_result_i;
 			mem_wdata_o <= mem_wdata;
-			sel_byte_o <= (inst_i[14:12] == 3'b000);
+			sel_byte_o <= (inst_i[14:12] === 3'b000);
 		end
 	end
 
