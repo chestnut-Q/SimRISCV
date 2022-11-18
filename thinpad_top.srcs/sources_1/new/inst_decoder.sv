@@ -17,7 +17,8 @@ module inst_decoder (
 		B_TYPE = 2,
 		U_TYPE = 3,
 		S_TYPE = 4,
-		J_TYPE = 5
+		J_TYPE = 5,
+        NONE = 6
 	} inst_type_t;
 
 	logic [6:0] opcode;
@@ -40,9 +41,11 @@ module inst_decoder (
 			inst_type = U_TYPE;
 		end else if (opcode === 7'b0100011) begin
 			inst_type = S_TYPE;
-		end else begin
+		end else if (opcode === 7'b1101111 || opcode === 7'b1100111) begin
 			inst_type = J_TYPE;
-		end
+        end else begin
+            inst_type = NONE;
+        end
 	end
 
     assign rs1_o = inst_i[19:15];
