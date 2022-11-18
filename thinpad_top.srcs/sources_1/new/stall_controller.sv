@@ -71,7 +71,7 @@ module stall_controller (
             stall_o = 5'b11111;
         end else begin
             if (id_inst_i[6:0] == 7'b1100111) begin // jalr
-                flush_o[1] = 1'b0;
+                flush_o[1] = 1'b1;
             end
             if (exe_inst_type_i == B_TYPE) begin
                 if ((exe_inst_i[14:12] == 3'b000 && exe_alu_zero_i) || (exe_inst_i[14:12] == 3'b001 && !exe_alu_zero_i)) // beq && bne
