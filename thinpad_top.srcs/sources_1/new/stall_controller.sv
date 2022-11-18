@@ -70,7 +70,7 @@ module stall_controller (
             (mem_master_state_i == ALREADY || (mem_master_state_i == IDLE && !mem_master_ren && !mem_master_wen)))) begin
             stall_o = 5'b11111;
         end else begin
-            if (id_inst_i[6:0] == 7'b1100111) begin // jalr
+            if (id_inst_type_i == 3'b101) begin // j
                 flush_o[1] = 1'b1;
             end
             if (exe_inst_type_i == B_TYPE) begin

@@ -302,10 +302,9 @@ module thinpad_top (
   logic branch;
   logic jump;
   assign branch = ((exe_inst_type == 3'b010 && ((exe_inst[14:12] == 3'b000 && exe_alu_zero)||(exe_inst[14:12] == 3'b001 && !exe_alu_zero))) === 1'b1);
-  assign jump = !branch && (if_inst[6:0] === 7'b1101111 || id_inst[6:0] === 7'b1100111);
+  assign jump = ((!branch && (id_inst[6:0] === 7'b1101111 || id_inst[6:0] === 7'b1100111)) === 1'b1);
   logic [31:0] jump_addr;
-  assign jump_addr = id_inst[6:0] == 7'b1100111 ? (after_bypass_id_rf_rdata1 + id_imm) & (-2) : if_PC + {{19{if_inst[31]}}, if_inst[31], if_inst[19:12], if_inst[20], if_inst[30:21], 1'b0}; 
-
+  assign jump_addr = id_inst[6:0] == 7'b1100111 ? (after_bypass_id_rf_rdata1 + id_imm) & (-2) : id_PC + {{19{id_inst[31]}}, id_inst[31], id_inst[19:12], id_inst[20], id_inst[30:21], 1'b0}; 
   PC_mux PC_mux(
     .clk_i(sys_clk),
     .rst_i(sys_rst),
