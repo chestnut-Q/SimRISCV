@@ -83,24 +83,6 @@ module stall_controller (
         end
     end
 
-    // always_comb begin
-    //     stall_o = 5'b00000;
-    //     flush_o = 5'b00000;
-    //     if (!(if_master_state_i == ALREADY &&
-    //         (mem_master_state_i == ALREADY || (mem_master_state_i == IDLE && !mem_master_ren && !mem_master_wen)))) begin
-    //         stall_o = 5'b11111;
-    //     end else begin
-    //         if ((wb_rf_wen_i && wb_rd_i != 5'd0 && (wb_rd_i == id_rs1 || wb_rd_i == id_rs2))
-    //             || (mem_rf_wen && mem_rd != 5'd0 && (mem_rd == id_rs1 || mem_rd == id_rs2))
-    //             || (exe_rf_wen && exe_rd != 5'd0 && (exe_rd == id_rs1 || exe_rd == id_rs2))) begin
-    //                 stall_o[1:0] = 2'b11;
-    //                 flush_o[2] = 1'b1;
-    //             end else if (exe_inst_type_i == B_TYPE && exe_alu_zero_i) begin
-    //                 flush_o[2:1] = 2'b11;
-    //             end
-    //     end
-    // end
-
     always_comb begin
         rdata1_bypass_o = 2'd0;
         if (mem_rf_wen && mem_rd != 5'd0 && mem_rd == id_rs1) begin

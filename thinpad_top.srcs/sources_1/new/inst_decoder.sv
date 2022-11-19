@@ -63,7 +63,7 @@ module inst_decoder (
         aluSRL = 7,
         aluSRA = 8,
         aluROL = 9,
-        jump = 10, //Jָ�pc+4
+        jump = 10, // J 指令 PC+4
         aluLUI = 11
     } alu_funct_t;
 
@@ -101,6 +101,8 @@ module inst_decoder (
                     3'b100: alu_funct = aluXOR;
                     3'b110: alu_funct = aluOR;
                     3'b111: alu_funct = aluAND;
+                    3'b001: alu_funct = aluSLL;
+                    3'b101: alu_funct = aluSRL;
                     default: alu_funct = aluADD;
                 endcase
             end 
