@@ -14,6 +14,7 @@ module stall_controller (
     input wire [4:0] wb_rd_i,
     input wire wb_rf_wen_i,
     input wire exe_alu_zero_i,
+    input wire bht_past_i,
     output reg [4:0] stall_o,
     output reg [4:0] flush_o
 );
@@ -71,7 +72,7 @@ module stall_controller (
                 || (exe_rf_wen && exe_rd != 5'd0 && (exe_rd == id_rs1 || exe_rd == id_rs2))) begin
                     stall_o[1:0] = 2'b11;
                     flush_o[2] = 1'b1;
-                end else if (exe_inst_type_i == B_TYPE && exe_alu_zero_i) begin
+                end else if ((bht_past_i == 1'b1 && exe_inst_type_i == B_TYPE && !exe_alu_zero_i) || (bht_past_i == 1'b0 && exe_inst_type_i == B_TYPE && exe_alu_zero_i)) begin
                     flush_o[2:1] = 2'b11;
                 end
         end

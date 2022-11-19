@@ -231,6 +231,14 @@ module thinpad_top (
   logic [31:0] if_PC;
   logic [31:0] if_inst;
   logic [3:0] if_master_state;
+  logic [4:0] if_rs1;
+  logic [4:0] if_rs2;
+  logic [4:0] if_rd;
+  logic if_alu_src;
+  logic [3:0] if_alu_funct;
+  logic [2:0] if_inst_type;
+  logic [31:0] if_imm;
+
   logic [31:0] id_PC;
   logic [31:0] id_inst;
   logic [4:0] id_rs1;
@@ -269,6 +277,7 @@ module thinpad_top (
   logic wb_rf_wen;
   logic [4:0] stall;
   logic [4:0] flush;
+  logic bht_past;
 
   stall_controller stall_controller (
     .if_master_state_i(if_master_state),
@@ -284,20 +293,41 @@ module thinpad_top (
     .wb_rd_i(wb_rd),
     .wb_rf_wen_i(wb_rf_wen),
     .exe_alu_zero_i(exe_alu_zero),
+    .bht_past_i(bht_past),
     .stall_o(stall),
     .flush_o(flush)
   );
+
+  reg [1:0] bht_state;
+  reg [31:0] last_branch_dst;
+
+  BHT bht(
+    .clk_i(sys_clk),
+    .rst_i(sys_rst),
+    .stall_i(stall[2]),
+    .bht_past_i(bht_past),
+    .PC_src_type_i(exe_inst_type),
+    .PC_src_zero_i(exe_alu_zero),
+    .pred_state_o(bht_state)
+  );
+
+  reg[31:0] id_bht_addr;
 
   PC_mux PC_mux(
     .clk_i(sys_clk),
     .rst_i(sys_rst),
     .rst_addr_i(32'h8000_0000),
     .stall_i(stall[0]),
-    .PC_src_i((exe_inst_type == 3'b010 && exe_alu_zero)),
+    .PC_src_i((exe_inst_type == 3'b010 && exe_alu_zero)), 
+    .PC_src_type_i(exe_inst_type),
+    .PC_src_zero_i(exe_alu_zero),
+    .bht_pre_type_i(if_inst_type),
     .branch_addr_i(exe_branch_addr),
-    .PC_o(if_PC)
+    .bht_state_i(bht_state),
+    .bht_addr_i(id_bht_addr),
+    .PC_o(if_PC),
+    .bht_past_o(bht_past)
   );
-
 
   IF_ID_controller IF_ID_controller(
     .clk_i(sys_clk),
@@ -306,11 +336,14 @@ module thinpad_top (
     .flush_i(flush[1]),
     .PC_i(if_PC),
     .inst_i(if_inst),
+    .bht_inst_type_i(if_inst_type),
+    .bht_imm(if_imm),
     .PC_o(id_PC),
-    .inst_o(id_inst)
+    .inst_o(id_inst),
+    .bht_addr_o(id_bht_addr)
   );
 
-  inst_decoder inst_decoder(
+  inst_decoder id_inst_decoder(
     .inst_i(id_inst),
     .rs1_o(id_rs1),
     .rs2_o(id_rs2),
@@ -319,6 +352,17 @@ module thinpad_top (
     .alu_funct_o(id_alu_funct),
     .inst_type_o(id_inst_type),
     .imm_o(id_imm)
+  );
+
+  inst_decoder if_inst_decoder(
+    .inst_i(if_inst),
+    .rs1_o(if_rs1),
+    .rs2_o(if_rs2),
+    .rd_o(if_rd),
+    .alu_src_o(if_alu_src), // alu 的第 2 个输入是 rdata_2（0）还是 imm（1）
+    .alu_funct_o(if_alu_funct),
+    .inst_type_o(if_inst_type),
+    .imm_o(if_imm)
   );
 
   register_file_32 register_file (

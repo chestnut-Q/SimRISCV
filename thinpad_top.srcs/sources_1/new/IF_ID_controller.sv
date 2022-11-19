@@ -8,8 +8,13 @@ module IF_ID_controller (
 	input wire flush_i,
     input wire [31:0] PC_i,
     input wire [31:0] inst_i,
+	
+	input wire [2:0] bht_inst_type_i, 
+	input wire [31:0] bht_imm,
+
     output reg [31:0] PC_o,
-    output reg [31:0] inst_o
+    output reg [31:0] inst_o,
+	output reg [31:0] bht_addr_o
 );
 
 	always_ff @(posedge clk_i or posedge rst_i) begin
@@ -24,6 +29,11 @@ module IF_ID_controller (
 		end else begin
             PC_o <= PC_i;
             inst_o <= inst_i;
+			if (bht_inst_type_i == 3'b010) begin
+				bht_addr_o = PC_i + bht_imm;
+			end else begin
+				bht_addr_o = PC_i + 4;
+			end
 		end
 	end
 
