@@ -5,8 +5,7 @@ module ALU (
     input wire [31:0] a,
     input wire [31:0] b,
     input wire [`WIDTH_ALU_FUNCT] op,
-    output reg [31:0] y,
-    output wire zero_o
+    output reg [31:0] y
 );
 
     always_comb begin
@@ -26,7 +25,5 @@ module ALU (
             default: y = 32'd0;
         endcase
     end
-
-    assign zero_o = (y == 32'd0);
 
 endmodule

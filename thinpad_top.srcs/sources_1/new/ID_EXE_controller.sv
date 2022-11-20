@@ -17,7 +17,6 @@ module ID_EXE_controller (
 	input wire [31:0] rdata2_i,
 	output reg [31:0] inst_o,
 	output reg [`WIDTH_INST_TYPE] inst_type_o,
-	output reg [31:0] branch_addr_o,
 	output reg [`WIDTH_ALU_FUNCT] alu_funct_o,
 	output reg alu_src_o,
 	output reg [31:0] imm_o,
@@ -30,7 +29,6 @@ module ID_EXE_controller (
 		if (rst_i) begin
             inst_o <= `NOP;
 			inst_type_o <= `TYPE_I;
-			branch_addr_o <= 32'd0;
 			alu_funct_o <= `FUNCT3_ADD;
 			alu_src_o <= `EN_Imm;
 			imm_o <= '0;
@@ -43,7 +41,6 @@ module ID_EXE_controller (
 		end else begin
             inst_o <= inst_i;
 			inst_type_o <= inst_type_i;
-			branch_addr_o <= PC_i + imm_i;
 			alu_funct_o <= alu_funct_i;
 			alu_src_o <= alu_src_i;
 			imm_o <= imm_i;

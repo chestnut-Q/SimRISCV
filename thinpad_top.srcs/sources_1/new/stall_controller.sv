@@ -14,7 +14,7 @@ module stall_controller (
     input wire [`WIDTH_INST_TYPE] mem_inst_type_i,
     input wire [4:0] wb_rd_i,
     input wire wb_rf_wen_i,
-    input wire exe_alu_zero_i,
+    input wire branch_zero_i,
     output reg [4:0] stall_o,
     output reg [4:0] flush_o,
     output reg [1:0] rdata1_bypass_o, // ID 阶段 rdata1 bypass mux 0: rdata1; 1: exe_rd; 2: mem_rd
@@ -62,15 +62,12 @@ module stall_controller (
             (mem_master_state_i == ALREADY || (mem_master_state_i == IDLE && !mem_master_ren && !mem_master_wen)))) begin
             stall_o = 5'b11111;
         end else begin
-            if (id_inst_type_i == `TYPE_J) begin // j
-                flush_o[1] = 1'b1;
-            end
-            if (exe_inst_type_i == `TYPE_B) begin
-                if ((exe_inst_i[14:12] == `FUNCT3_BEQ && exe_alu_zero_i) || (exe_inst_i[14:12] == `FUNCT3_BNE && !exe_alu_zero_i)) // beq && bne
-                    flush_o[2:1] = 2'b11;
-            end else if (exe_is_load_inst && exe_rf_wen && exe_rd != 5'd0 && (exe_rd == id_rs1 || exe_rd == id_rs2)) begin
+            if (exe_is_load_inst && exe_rf_wen && exe_rd != 5'd0 && (exe_rd == id_rs1 || exe_rd == id_rs2)) begin
                 stall_o[1:0] = 2'b11;
                 flush_o[2] = 1'b1;
+            end else if ((id_inst_type_i == `TYPE_B && ((id_inst_i[14:12] == `FUNCT3_BEQ && branch_zero_i) || (id_inst_i[14:12] == `FUNCT3_BNE && !branch_zero_i))) ||
+                id_inst_i[6:0] == `OP_JALR) begin
+                flush_o[1] = 1'b1;
             end
         end
     end

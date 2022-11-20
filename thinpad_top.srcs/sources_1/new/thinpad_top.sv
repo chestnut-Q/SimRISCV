@@ -243,14 +243,12 @@ module thinpad_top (
   logic [31:0] exe_PC;
   logic [31:0] exe_inst;
   logic [2:0] exe_inst_type;
-  logic [31:0] exe_branch_addr;
   logic [3:0] exe_alu_funct;
   logic exe_alu_src; // alu 的第 2 个输入是 rdata_2（0）或 imm（1）
   logic [31:0] exe_imm;
   logic [31:0] exe_rdata1;
   logic [31:0] exe_rdata2;
   logic [31:0] exe_alu_result;
-  logic exe_alu_zero;
   logic [31:0] mem_inst;
   logic [2:0] mem_inst_type;
   logic mem_PC_src;
@@ -285,30 +283,26 @@ module thinpad_top (
     .mem_inst_type_i(mem_inst_type),
     .wb_rd_i(wb_rd),
     .wb_rf_wen_i(wb_rf_wen),
-    .exe_alu_zero_i(exe_alu_zero),
+    .branch_zero_i(id_rf_rdata1 === id_rf_rdata2),
     .stall_o(stall),
     .flush_o(flush),
     .rdata1_bypass_o(rdata1_bypass),
     .rdata2_bypass_o(rdata2_bypass)
   );
 
-  logic branch;
-  logic jump;
-  assign branch = ((exe_inst_type == `TYPE_B && ((exe_inst[14:12] == `FUNCT3_BEQ && exe_alu_zero)||(exe_inst[14:12] == `FUNCT3_BNE && !exe_alu_zero))) === 1'b1);
-  assign jump = ((!branch && (id_inst[6:0] === `OP_JAL || id_inst[6:0] === `OP_JALR)) === 1'b1);
-  logic [31:0] jump_addr;
-  assign jump_addr = id_inst[6:0] == `OP_JALR ? (id_rf_rdata1 + id_imm) & (-2) : id_PC + {{19{id_inst[31]}}, id_inst[31], id_inst[19:12], id_inst[20], id_inst[30:21], 1'b0}; 
-  PC_mux PC_mux(
+  IF IF (
     .clk_i(sys_clk),
     .rst_i(sys_rst),
-    .rst_addr_i(`StartInstAddr),
     .stall_i(stall[0]),
-    .PC_src_i(branch),// BEQ, BNE
-    .branch_addr_i(jump ? jump_addr : exe_branch_addr),
-    .jump_i(jump),// J
-    .PC_o(if_PC)
+    .id_inst_type_i(id_inst_type),
+    .id_inst_i(id_inst),
+    .if_inst_i(if_inst),
+    .id_rf_rdata1_i(id_rf_rdata1),
+    .id_rf_rdata2_i(id_rf_rdata2),
+    .id_imm_i(id_imm),
+    .id_PC_i(id_PC),
+    .if_PC_o(if_PC)
   );
-
 
   IF_ID_controller IF_ID_controller(
     .clk_i(sys_clk),
@@ -355,7 +349,6 @@ module thinpad_top (
     .rdata2_i(id_rf_rdata2),
     .inst_o(exe_inst),
     .inst_type_o(exe_inst_type),
-    .branch_addr_o(exe_branch_addr), 
     .alu_funct_o(exe_alu_funct),
     .alu_src_o(exe_alu_src), 
     .imm_o(exe_imm),
@@ -366,10 +359,9 @@ module thinpad_top (
 
   ALU ALU(
     .a((exe_inst[6:0] == `OP_AUIPC || exe_inst_type == `TYPE_J) ? exe_PC : exe_rdata1), // AUIPC
-    .b(exe_alu_src ? exe_imm : exe_rdata2),
+    .b(exe_alu_src == `EN_Imm ? exe_imm : exe_rdata2),
     .op(exe_alu_funct),
-    .y(exe_alu_result),
-    .zero_o(exe_alu_zero)
+    .y(exe_alu_result)
   );
 
   EXE_MEM_controller EXE_MEM_controller(
