@@ -234,9 +234,6 @@ module thinpad_top (
   logic [3:0] if_master_state;
   logic [31:0] id_PC;
   logic [31:0] id_inst;
-  logic [4:0] id_rs1;
-  logic [4:0] id_rs2;
-  logic [4:0] id_rd;
   logic id_alu_src;
   logic [3:0] id_alu_funct;
   logic [2:0] id_inst_type;
@@ -295,17 +292,12 @@ module thinpad_top (
     .rdata2_bypass_o(rdata2_bypass)
   );
 
-  logic [31:0] after_bypass_id_rf_rdata1;
-  logic [31:0] after_bypass_id_rf_rdata2;
-  assign after_bypass_id_rf_rdata1 = rdata1_bypass == `EN_NoBypass ? id_rf_rdata1 : (rdata1_bypass == `EN_EXEBypass ? exe_alu_result : mem_rf_wdata);
-  assign after_bypass_id_rf_rdata2 = rdata2_bypass == `EN_NoBypass ? id_rf_rdata2 : (rdata2_bypass == `EN_EXEBypass ? exe_alu_result : mem_rf_wdata);
-
   logic branch;
   logic jump;
   assign branch = ((exe_inst_type == `TYPE_B && ((exe_inst[14:12] == `FUNCT3_BEQ && exe_alu_zero)||(exe_inst[14:12] == `FUNCT3_BNE && !exe_alu_zero))) === 1'b1);
   assign jump = ((!branch && (id_inst[6:0] === `OP_JAL || id_inst[6:0] === `OP_JALR)) === 1'b1);
   logic [31:0] jump_addr;
-  assign jump_addr = id_inst[6:0] == `OP_JALR ? (after_bypass_id_rf_rdata1 + id_imm) & (-2) : id_PC + {{19{id_inst[31]}}, id_inst[31], id_inst[19:12], id_inst[20], id_inst[30:21], 1'b0}; 
+  assign jump_addr = id_inst[6:0] == `OP_JALR ? (id_rf_rdata1 + id_imm) & (-2) : id_PC + {{19{id_inst[31]}}, id_inst[31], id_inst[19:12], id_inst[20], id_inst[30:21], 1'b0}; 
   PC_mux PC_mux(
     .clk_i(sys_clk),
     .rst_i(sys_rst),
@@ -329,27 +321,23 @@ module thinpad_top (
     .inst_o(id_inst)
   );
 
-  inst_decoder inst_decoder(
-    .inst_i(id_inst),
-    .rs1_o(id_rs1),
-    .rs2_o(id_rs2),
-    .rd_o(id_rd),
-    .alu_src_o(id_alu_src), // alu 的第 2 个输入是 rdata_2（0）还是 imm（1）
-    .alu_funct_o(id_alu_funct),
-    .inst_type_o(id_inst_type),
-    .imm_o(id_imm)
-  );
-
-  register_file register_file (
+  ID ID (
     .clk_i(sys_clk),
     .rst_i(sys_rst),
-    .rd_i(wb_rd),
-    .wdata_i(wb_rf_wdata),
-    .we_i(wb_rf_wen),
-    .rs1_i(id_rs1),
-    .rs2_i(id_rs2),
-    .rdata1_o(id_rf_rdata1),
-    .rdata2_o(id_rf_rdata2)
+    .inst_i(id_inst),
+    .rf_waddr_i(wb_rd),
+    .rf_wdata_i(wb_rf_wdata),
+    .rf_wen_i(wb_rf_wen),
+    .rdata1_bypass_i(rdata1_bypass),
+    .rdata2_bypass_i(rdata2_bypass),
+    .exe_alu_result_i(exe_alu_result),
+    .mem_rf_wdata_i(mem_rf_wdata),
+    .alu_src_o(id_alu_src),
+    .alu_funct_o(id_alu_funct),
+    .inst_type_o(id_inst_type),
+    .imm_o(id_imm),
+    .rf_rdata1_o(id_rf_rdata1),
+    .rf_rdata2_o(id_rf_rdata2)
   );
 
   ID_EXE_controller ID_EXE_controller(
@@ -363,8 +351,8 @@ module thinpad_top (
     .alu_funct_i(id_alu_funct),
     .alu_src_i(id_alu_src),
     .imm_i(id_imm),
-    .rdata1_i(after_bypass_id_rf_rdata1),
-    .rdata2_i(after_bypass_id_rf_rdata2),
+    .rdata1_i(id_rf_rdata1),
+    .rdata2_i(id_rf_rdata2),
     .inst_o(exe_inst),
     .inst_type_o(exe_inst_type),
     .branch_addr_o(exe_branch_addr), 
@@ -373,7 +361,7 @@ module thinpad_top (
     .imm_o(exe_imm),
     .rdata1_o(exe_rdata1),
     .rdata2_o(exe_rdata2),
-    .PC_o(exe_PC)//AUIPC
+    .PC_o(exe_PC) // AUIPC
   );
 
   ALU ALU(

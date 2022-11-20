@@ -5,7 +5,6 @@ module inst_decoder (
     input wire [31:0] inst_i,
     output wire [4:0] rs1_o,
     output wire [4:0] rs2_o,
-    output wire [4:0] rd_o,
     output wire alu_src_o, // 0: rdata2; 1: imm
     output wire [`WIDTH_ALU_FUNCT] alu_funct_o,
     output wire [`WIDTH_INST_TYPE] inst_type_o,
@@ -41,7 +40,6 @@ module inst_decoder (
 
     assign rs1_o = inst_i[19:15];
     assign rs2_o = inst_i[24:20];
-    assign rd_o = inst_i[11:7];
     assign alu_src_o = (inst_type == `TYPE_I || inst_type == `TYPE_S || inst_type == `TYPE_U);
     assign inst_type_o = inst_type;
     
