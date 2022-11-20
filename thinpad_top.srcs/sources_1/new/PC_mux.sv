@@ -24,7 +24,7 @@ module PC_mux(
                     PC_o <= PC_o + 4;
                 end
             end
-            else begin // JÖ¸Áî
+            else begin // JæŒ‡ä»¤
                 PC_o <= branch_addr_i;
             end
         end

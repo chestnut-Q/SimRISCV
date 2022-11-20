@@ -10,7 +10,7 @@ module master #(
     input wire [DATA_WIDTH-1:0] wdata_i,
     input wire wen_i,
     input wire ren_i,
-    input wire sel_byte_i, // ×Ö½Ú£¨1£©»òÕß×Ö£¨0£©
+    input wire sel_byte_i,
     input wire init,
     output reg [DATA_WIDTH-1:0] rdata_o,
 
@@ -57,19 +57,6 @@ module master #(
 
 	always_comb begin
 		case (state)
-            // INIT: begin
-            //     if (ren_i) begin
-            //         state_n = READ_SRAM_ACTION;
-            //     end else if (wen_i) begin
-            //         state_n = WRITE_SRAM_ACTION;
-            //     end else begin
-            //         if (init) begin
-            //             state_n = INIT;
-            //         end else begin
-            //             state_n = IDLE;
-            //         end
-            //     end
-			// end
 			IDLE: begin
                 if (ren_i) begin
                     state_n = READ_SRAM_ACTION;

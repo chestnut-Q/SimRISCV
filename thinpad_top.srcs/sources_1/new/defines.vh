@@ -1,37 +1,17 @@
 // Constants
-`define RstEnable 1'b1
-`define RstDisable 1'b0
-`define ZeroWord 32'h00000000
-`define WriteEnable 1'b1
-`define WriteDisable 1'b0
-`define ReadEnable 1'b1
-`define ReadDisable 1'b0
-`define AluOpBus 7:0
-`define AluSelBus 2:0
-`define InstValid 1'b0
-`define InstInvalid 1'b1
-`define Stop 1'b1
-`define NoStop 1'b0
-`define InDelaySlot 1'b1
-`define NotInDelaySlot 1'b0
-`define Branch 1'b1
-`define NotBranch 1'b0
-`define InterruptAssert 1'b1
-`define InterruptNotAssert 1'b0
-`define TrapAssert 1'b1
-`define TrapNotAssert 1'b0
-`define True_v 1'b1
-`define False_v 1'b0
-`define ChipEnable 1'b1
-`define ChipDisable 1'b0
+`define NOP 32'h00000013
 `define StartInstAddr 32'hbfc00000
-
 
 `define WIDTH_INST_TYPE 2:0
 `define WIDTH_ALU_FUNCT 3:0
 
-`define Imm 1'b1;
-`define Rdata2 1'b0;
+`define EN_Imm 1'b1
+`define EN_Rdata2 1'b0
+`define EN_BYTE 1'b1
+`define EN_WORD 1'b0
+`define EN_NoBypass 2'd0
+`define EN_EXEBypass 2'd1
+`define EN_MEMBypass 2'd2
 
 // Instruction Number
 `define OP_RTYPE 7'b0110011
@@ -59,7 +39,6 @@
 `define FUNCT7_SUB 7'b0100000
 `define FUNCT7_SRL 7'b0000000
 `define FUNCT7_SRA 7'b0100000
-
 
 `define TYPE_R 3'd0
 `define TYPE_I 3'd1

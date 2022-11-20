@@ -296,19 +296,19 @@ module thinpad_top (
 
   logic [31:0] after_bypass_id_rf_rdata1;
   logic [31:0] after_bypass_id_rf_rdata2;
-  assign after_bypass_id_rf_rdata1 = rdata1_bypass == 2'd0 ? id_rf_rdata1 : (rdata1_bypass == 2'd1 ? exe_alu_result : mem_rf_wdata);
-  assign after_bypass_id_rf_rdata2 = rdata2_bypass == 2'd0 ? id_rf_rdata2 : (rdata2_bypass == 2'd1 ? exe_alu_result : mem_rf_wdata);
+  assign after_bypass_id_rf_rdata1 = rdata1_bypass == `EN_NoBypass ? id_rf_rdata1 : (rdata1_bypass == `EN_EXEBypass ? exe_alu_result : mem_rf_wdata);
+  assign after_bypass_id_rf_rdata2 = rdata2_bypass == `EN_NoBypass ? id_rf_rdata2 : (rdata2_bypass == `EN_EXEBypass ? exe_alu_result : mem_rf_wdata);
 
   logic branch;
   logic jump;
-  assign branch = ((exe_inst_type == 3'b010 && ((exe_inst[14:12] == 3'b000 && exe_alu_zero)||(exe_inst[14:12] == 3'b001 && !exe_alu_zero))) === 1'b1);
-  assign jump = ((!branch && (id_inst[6:0] === 7'b1101111 || id_inst[6:0] === 7'b1100111)) === 1'b1);
+  assign branch = ((exe_inst_type == `TYPE_B && ((exe_inst[14:12] == `FUNCT3_BEQ && exe_alu_zero)||(exe_inst[14:12] == `FUNCT3_BNE && !exe_alu_zero))) === 1'b1);
+  assign jump = ((!branch && (id_inst[6:0] === `OP_JAL || id_inst[6:0] === `OP_JALR)) === 1'b1);
   logic [31:0] jump_addr;
-  assign jump_addr = id_inst[6:0] == 7'b1100111 ? (after_bypass_id_rf_rdata1 + id_imm) & (-2) : id_PC + {{19{id_inst[31]}}, id_inst[31], id_inst[19:12], id_inst[20], id_inst[30:21], 1'b0}; 
+  assign jump_addr = id_inst[6:0] == `OP_JALR ? (after_bypass_id_rf_rdata1 + id_imm) & (-2) : id_PC + {{19{id_inst[31]}}, id_inst[31], id_inst[19:12], id_inst[20], id_inst[30:21], 1'b0}; 
   PC_mux PC_mux(
     .clk_i(sys_clk),
     .rst_i(sys_rst),
-    .rst_addr_i(32'h8000_0000),
+    .rst_addr_i(`StartInstAddr),
     .stall_i(stall[0]),
     .PC_src_i(branch),// BEQ, BNE
     .branch_addr_i(jump ? jump_addr : exe_branch_addr),
@@ -376,7 +376,7 @@ module thinpad_top (
   );
 
   ALU ALU(
-    .a((exe_inst[6:0] == 7'b0010111 || exe_inst_type == 3'b101) ? exe_PC : exe_rdata1),//AUIPC
+    .a((exe_inst[6:0] == `OP_AUIPC || exe_inst_type == `TYPE_J) ? exe_PC : exe_rdata1), // AUIPC
     .b(exe_alu_src ? exe_imm : exe_rdata2),
     .op(exe_alu_funct),
     .y(exe_alu_result),

@@ -31,7 +31,7 @@ module sram_controller #(
 	output reg [SRAM_BYTES-1:0] sram_be_n
 );
 
-	// ÊµÏÖ SRAM ¿ØÖÆÆ÷
+	// å®ç° SRAM æ§åˆ¶å™¨
 	typedef enum logic [2:0] {
 		STATE_IDLE = 0,
 		STATE_READ = 1,
@@ -80,7 +80,7 @@ module sram_controller #(
 		endcase
 	end
 
-	// sram_data ÈıÌ¬ÃÅ
+	// sram_data ä¸‰æ€é—¨
     wire [SRAM_DATA_WIDTH-1:0] sram_data_i_comb;
     reg [SRAM_DATA_WIDTH-1:0] sram_data_o_comb;
     reg sram_data_t_comb;
@@ -111,14 +111,14 @@ module sram_controller #(
 		sram_we_n = 1'b1;
 		sram_be_n = ~wb_sel_i;
 		if (wb_we_i) begin
-			// Ğ´²Ù×÷
+			// å†™æ“ä½œ
 			sram_data_t_comb = 1'b0;
 			sram_data_o_comb = wb_dat_i;
 			if (state == STATE_WRITE_2) begin
 				sram_we_n = 1'b0;
 			end
 		end else begin
-			// ¶Á²Ù×÷
+			// è¯»æ“ä½œ
 			sram_data_t_comb = 1'b1;
 			if (state == STATE_READ || state == STATE_READ_2) begin
 				sram_oe_n = 1'b0;
