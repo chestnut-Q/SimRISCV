@@ -1,4 +1,5 @@
 `default_nettype none
+`include "defines.vh"
 
 module inst_decoder (
     input wire [31:0] inst_i,
@@ -6,114 +7,92 @@ module inst_decoder (
     output wire [4:0] rs2_o,
     output wire [4:0] rd_o,
     output wire alu_src_o, // 0: rdata2; 1: imm
-    output wire [3:0] alu_funct_o,
-    output wire [2:0] inst_type_o,
+    output wire [`WIDTH_ALU_FUNCT] alu_funct_o,
+    output wire [`WIDTH_INST_TYPE] inst_type_o,
     output reg [31:0] imm_o
 );
-
-	typedef enum logic [2:0] {
-		R_TYPE = 0,
-		I_TYPE = 1,
-		B_TYPE = 2,
-		U_TYPE = 3,
-		S_TYPE = 4,
-		J_TYPE = 5
-	} inst_type_t;
 
 	logic [6:0] opcode;
     logic [2:0] funct3;
     logic [6:0] funct7;
-    inst_type_t inst_type;
+    logic [`WIDTH_INST_TYPE] inst_type;
 
     assign opcode = inst_i[6:0];
     assign funct3 = inst_i[14:12];
     assign funct7 = inst_i[31:25];
 
 	always_comb begin
-		if (opcode == 7'b0110011) begin
-			inst_type = R_TYPE;
-		end else if (opcode == 7'b0010011 || opcode == 7'b0000011) begin
-			inst_type = I_TYPE;
-		end else if (opcode == 7'b1100011) begin
-			inst_type = B_TYPE;
-		end else if (opcode == 7'b0110111 || opcode == 7'b0010111) begin
-			inst_type = U_TYPE;
-		end else if (opcode == 7'b0100011) begin
-			inst_type = S_TYPE;
-		end else begin
-			inst_type = J_TYPE;
-		end
+		if (opcode == `OP_RTYPE) begin
+			inst_type = `TYPE_R;
+		end else if (opcode == `OP_ITYPE || opcode == `OP_LTYPE) begin
+			inst_type = `TYPE_I;
+		end else if (opcode == `OP_BTYPE) begin
+			inst_type = `TYPE_B;
+		end else if (opcode == `OP_LUI || opcode == `OP_AUIPC) begin
+			inst_type = `TYPE_U;
+		end else if (opcode == `OP_STYPE) begin
+			inst_type = `TYPE_S;
+		end else if (opcode == `OP_JAL || opcode == `OP_JALR) begin
+			inst_type = `TYPE_J;
+        end else begin
+            inst_type = `TYPE_R;
+        end
 	end
 
     assign rs1_o = inst_i[19:15];
     assign rs2_o = inst_i[24:20];
     assign rd_o = inst_i[11:7];
-    assign alu_src_o = (inst_type == I_TYPE || inst_type == S_TYPE || inst_type == U_TYPE);
+    assign alu_src_o = (inst_type == `TYPE_I || inst_type == `TYPE_S || inst_type == `TYPE_U);
     assign inst_type_o = inst_type;
     
     /* alu_funct begin */
-	typedef enum logic [3:0] {
-		aluADD = 0,
-		aluSUB = 1,
-		aluAND = 2,
-		aluOR = 3,
-        aluXOR = 4,
-        aluNOT = 5,
-        aluSLL = 6,
-        aluSRL = 7,
-        aluSRA = 8,
-        aluROL = 9,
-        jump = 10, // J 指令 PC+4
-        aluLUI = 11
-    } alu_funct_t;
 
-    alu_funct_t alu_funct;
-    
+    logic [`WIDTH_ALU_FUNCT] alu_funct;
 
     always_comb begin
         case (opcode)
-            7'b0110011: begin
+            `OP_RTYPE: begin
                 case (funct3)
-                    3'b000: begin
+                    `FUNCT3_ADD: begin
                         case (funct7)
-                            7'b0000000: alu_funct = aluADD;
-                            7'b0100000: alu_funct = aluSUB;
-                            default: alu_funct = aluADD;
+                            `FUNCT7_ADD: alu_funct = `ALU_ADD;
+                            `FUNCT7_SUB: alu_funct = `ALU_SUB;
+                            default: alu_funct = `ALU_ADD;
                         endcase
                     end
-                    3'b001: alu_funct = aluSLL;
-                    3'b100: alu_funct = aluXOR;
-                    3'b101: begin
+                    `FUNCT3_SLL: alu_funct = `ALU_SLL;
+                    `FUNCT3_XOR: alu_funct = `ALU_XOR;
+                    `FUNCT3_SRL: begin
                         case (funct7)
-                            7'b0000000: alu_funct = aluSRL;
-                            7'b0100000: alu_funct = aluSRA;
-                            default: alu_funct = aluSRL;
+                            `FUNCT7_SRL: alu_funct = `ALU_SRL;
+                            `FUNCT7_SRA: alu_funct = `ALU_SRA;
+                            default: alu_funct = `ALU_SRL;
                         endcase 
                     end
-                    3'b110: alu_funct = aluOR;
-                    3'b111: alu_funct = aluAND;
-                    default: alu_funct = aluADD;
+                    `FUNCT3_OR: alu_funct = `ALU_OR;
+                    `FUNCT3_AND: alu_funct = `ALU_AND;
+                    default: alu_funct = `ALU_ADD;
                 endcase
             end
-            7'b0010011: begin //I-type
+            `OP_ITYPE: begin //I-type
                 case (funct3)
-                    3'b000: alu_funct = aluADD;
-                    3'b100: alu_funct = aluXOR;
-                    3'b110: alu_funct = aluOR;
-                    3'b111: alu_funct = aluAND;
-                    3'b001: alu_funct = aluSLL;
-                    3'b101: alu_funct = aluSRL;
-                    default: alu_funct = aluADD;
+                    `FUNCT3_ADD: alu_funct = `ALU_ADD;
+                    `FUNCT3_XOR: alu_funct = `ALU_XOR;
+                    `FUNCT3_OR: alu_funct = `ALU_OR;
+                    `FUNCT3_AND: alu_funct = `ALU_AND;
+                    `FUNCT3_SLL: alu_funct = `ALU_SLL;
+                    `FUNCT3_SRL: alu_funct = `ALU_SRL;
+                    default: alu_funct = `ALU_ADD;
                 endcase
             end 
-            7'b0100011: alu_funct = aluADD; // SB, SW
-            7'b0000011: alu_funct = aluADD; // LB, LW
-            7'b1100011: alu_funct = aluSUB; // BEQ, BNE
-            7'b0110111: alu_funct = aluLUI; // LUI
-            7'b0010111: alu_funct = aluADD; // AUIPC
-            7'b1101111: alu_funct = jump; // JAL
-            7'b1100111: alu_funct = jump; // JALR
-            default: alu_funct = aluADD;
+            `OP_STYPE: alu_funct = `ALU_ADD; // SB, SW
+            `OP_LTYPE: alu_funct = `ALU_ADD; // LB, LW
+            `OP_BTYPE: alu_funct = `ALU_SUB; // BEQ, BNE
+            `OP_LUI: alu_funct = `ALU_LUI; // LUI
+            `OP_AUIPC: alu_funct = `ALU_ADD; // AUIPC
+            `OP_JAL: alu_funct = `ALU_JUMP; // JAL
+            `OP_JALR: alu_funct = `ALU_JUMP; // JALR
+            default: alu_funct = `ALU_ADD;
         endcase
     end
 
@@ -123,14 +102,14 @@ module inst_decoder (
     /* imm gen begin */
     always_comb begin
         case (inst_type)
-            I_TYPE: imm_o = {{20{inst_i[31]}}, inst_i[31:20]};
-            S_TYPE: imm_o = {{20{inst_i[31]}}, inst_i[31:25], inst_i[11:7]};
-            B_TYPE: imm_o = {{19{inst_i[31]}}, inst_i[31], inst_i[7], inst_i[30:25], inst_i[11:8], 1'b0};
-            U_TYPE: imm_o = {inst_i[31:12], 12'd0};
-            J_TYPE: begin
+            `TYPE_I: imm_o = {{20{inst_i[31]}}, inst_i[31:20]};
+            `TYPE_S: imm_o = {{20{inst_i[31]}}, inst_i[31:25], inst_i[11:7]};
+            `TYPE_B: imm_o = {{19{inst_i[31]}}, inst_i[31], inst_i[7], inst_i[30:25], inst_i[11:8], 1'b0};
+            `TYPE_U: imm_o = {inst_i[31:12], 12'd0};
+            `TYPE_J: begin
                 case (opcode)
-                    7'b1101111: imm_o = {{19{inst_i[31]}}, inst_i[31], inst_i[19:12], inst_i[20], inst_i[30:21], 1'b0}; 
-                    7'b1100111: imm_o = {{20{inst_i[31]}}, inst_i[31:20]};// JALR
+                    `OP_JAL: imm_o = {{19{inst_i[31]}}, inst_i[31], inst_i[19:12], inst_i[20], inst_i[30:21], 1'b0}; 
+                    `OP_JALR: imm_o = {{20{inst_i[31]}}, inst_i[31:20]};
                     default: imm_o = {{20{inst_i[31]}}, inst_i[31:20]};
                 endcase
             end 

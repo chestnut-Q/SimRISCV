@@ -1,6 +1,6 @@
 `default_nettype none
 
-module ALU_32 (
+module ALU (
     input wire [31:0] a,
     input wire [31:0] b,
     input wire [3:0] op,

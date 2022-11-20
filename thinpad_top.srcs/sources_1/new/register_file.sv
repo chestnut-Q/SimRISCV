@@ -1,6 +1,6 @@
 `default_nettype none
 
-module register_file_32 (
+module register_file (
     input wire clk_i,
     input wire rst_i,
     input wire [4:0] rd_i,

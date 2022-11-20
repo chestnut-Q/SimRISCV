@@ -339,7 +339,7 @@ module thinpad_top (
     .imm_o(id_imm)
   );
 
-  register_file_32 register_file (
+  register_file register_file (
     .clk_i(sys_clk),
     .rst_i(sys_rst),
     .rd_i(wb_rd),
@@ -375,7 +375,7 @@ module thinpad_top (
     .PC_o(exe_PC)//AUIPC
   );
 
-  ALU_32 ALU(
+  ALU ALU(
     .a((exe_inst[6:0] == 7'b0010111 || exe_inst_type == 3'b101) ? exe_PC : exe_rdata1),//AUIPC
     .b(exe_alu_src ? exe_imm : exe_rdata2),
     .op(exe_alu_funct),
