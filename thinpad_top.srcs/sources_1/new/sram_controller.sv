@@ -32,14 +32,11 @@ module sram_controller #(
 );
 
 	// 实现 SRAM 控制器
-	typedef enum logic [2:0] {
+	typedef enum logic [1:0] {
 		STATE_IDLE = 0,
 		STATE_READ = 1,
-		STATE_READ_2 = 2,
-		STATE_WRITE = 3,
-		STATE_WRITE_2 = 4,
-		STATE_WRITE_3 = 5,
-		STATE_DONE = 6
+		STATE_WRITE = 2,
+		STATE_WRITE_2 = 3
 	} state_t;
 
 	state_t state, state_n;
@@ -56,27 +53,10 @@ module sram_controller #(
 					end
 				end
 			end
-			STATE_READ: begin
-				state_n = STATE_READ_2;
-			end
-			STATE_READ_2: begin
-				state_n = STATE_DONE;
-			end
-			STATE_WRITE: begin
-				state_n = STATE_WRITE_2;
-			end
-			STATE_WRITE_2: begin
-				state_n = STATE_WRITE_3;
-			end
-			STATE_WRITE_3: begin
-				state_n = STATE_DONE;
-			end
-			STATE_DONE: begin
-				state_n = STATE_IDLE;
-			end
-			default: begin
-				state_n = STATE_IDLE;
-			end
+			STATE_READ: state_n = STATE_IDLE;
+			STATE_WRITE: state_n = STATE_WRITE_2;
+			STATE_WRITE_2: state_n = STATE_IDLE;
+			default: state_n = STATE_IDLE;
 		endcase
 	end
 
@@ -96,17 +76,17 @@ module sram_controller #(
 			wb_dat_o = '0;
 		end else begin
 			state <= state_n;
-			if (state == STATE_READ_2 && !wb_we_i) begin
+			if (wb_stb_i && !wb_we_i) begin // 发起请求且不是写 等于 发起读请求
 				wb_dat_o <= sram_data_i_comb;
 			end
 		end
 	end
 
 	always_comb begin
-		wb_ack_o = (state == STATE_DONE);
+		wb_ack_o = (state == STATE_READ || state == STATE_WRITE_2);
 		sram_addr = wb_adr_i / 4;
 		sram_data_o_comb = {SRAM_DATA_WIDTH{1'b0}};
-		sram_ce_n = (state == STATE_IDLE || state == STATE_DONE);
+		sram_ce_n = ~wb_stb_i;
 		sram_oe_n = 1'b1;
 		sram_we_n = 1'b1;
 		sram_be_n = ~wb_sel_i;
@@ -114,13 +94,13 @@ module sram_controller #(
 			// 写操作
 			sram_data_t_comb = 1'b0;
 			sram_data_o_comb = wb_dat_i;
-			if (state == STATE_WRITE_2) begin
+			if (state == STATE_WRITE) begin
 				sram_we_n = 1'b0;
 			end
 		end else begin
 			// 读操作
 			sram_data_t_comb = 1'b1;
-			if (state == STATE_READ || state == STATE_READ_2) begin
+			if (wb_stb_i) begin
 				sram_oe_n = 1'b0;
 			end
 		end
