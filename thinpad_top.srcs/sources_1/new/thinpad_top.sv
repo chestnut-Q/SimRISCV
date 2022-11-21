@@ -231,7 +231,7 @@ module thinpad_top (
 
   logic [31:0] if_PC;
   logic [31:0] if_inst;
-  logic [3:0] if_master_state;
+  logic if_master_already;
   logic [31:0] id_PC;
   logic [31:0] id_inst;
   logic id_alu_src;
@@ -260,7 +260,7 @@ module thinpad_top (
   logic [31:0] mem_wdata;
   logic mem_sel_byte;
   logic [31:0] mem_rdata;
-  logic [3:0] mem_master_state;
+  logic mem_master_already;
   logic [31:0] mem_rf_wdata;
   logic [4:0] wb_rd;
   logic [31:0] wb_rf_wdata;
@@ -271,10 +271,8 @@ module thinpad_top (
   logic [1:0] rdata2_bypass;
 
   stall_controller stall_controller (
-    .if_master_state_i(if_master_state),
-    .mem_master_state_i(mem_master_state),
-    .mem_master_wen(mem_wen),
-    .mem_master_ren(mem_ren),
+    .if_master_already_i(if_master_already),
+    .mem_master_already_i(mem_master_already),
     .id_inst_i(id_inst),
     .id_inst_type_i(id_inst_type),
     .exe_inst_i(exe_inst),
@@ -475,7 +473,7 @@ module thinpad_top (
     .wb_dat_i(wbm0_dat_i),
     .wb_sel_o(wbm0_sel_o),
     .wb_we_o (wbm0_we_o),
-    .state_o(if_master_state)
+    .already_o(if_master_already)
   );
 
   master #(
@@ -500,7 +498,7 @@ module thinpad_top (
     .wb_dat_i(wbm1_dat_i),
     .wb_sel_o(wbm1_sel_o),
     .wb_we_o (wbm1_we_o),
-    .state_o(mem_master_state)
+    .already_o(mem_master_already)
   );
 
   wb_arbiter_2 #(
