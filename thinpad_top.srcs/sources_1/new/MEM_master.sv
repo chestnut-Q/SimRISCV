@@ -1,7 +1,7 @@
 `default_nettype none
 `include "defines.vh"
 
-module master #(
+module MEM_master #(
 	parameter ADDR_WIDTH = 32,
 	parameter DATA_WIDTH = 32
 ) (
@@ -14,7 +14,6 @@ module master #(
     input wire wen_i,
     input wire ren_i,
     input wire sel_byte_i,
-    input wire init,
     output reg [DATA_WIDTH-1:0] rdata_o,
 
     output reg wb_cyc_o,
