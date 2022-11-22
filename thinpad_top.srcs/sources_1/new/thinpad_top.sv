@@ -214,20 +214,44 @@ module thinpad_top (
   //     .TxD_data (ext_uart_tx)      // ???????????
   // );
 
-  // // ???????????????? 800x600@75Hz?????????? 50MHz
-  // logic [11:0] hdata;
-  // assign video_red   = hdata < 266 ? 3'b111 : 0;  // ???????
-  // assign video_green = hdata < 532 && hdata >= 266 ? 3'b111 : 0;  // ???????
-  // assign video_blue  = hdata >= 532 ? 2'b11 : 0;  // ???????
-  // assign video_clk   = clk_50M;
-  // vga #(12, 800, 856, 976, 1040, 600, 637, 643, 666, 1, 1) vga800x600at75 (
-  //     .clk        (clk_50M),
-  //     .hdata      (hdata),        // ??????
-  //     .vdata      (),             // ??????
-  //     .hsync      (video_hsync),
-  //     .vsync      (video_vsync),
-  //     .data_enable(video_de)
-  // );
+
+  logic wea;
+  logic [18:0] addra;
+  logic [7:0] dina;
+
+  logic [18:0] addrb;
+  logic [7:0] doutb;
+
+  blk_mem_gen blk (
+    .clka(clk_10M),    // input wire clka
+    .ena(1),      // input wire ena
+    .wea(!block_ram_we_n),      // input wire [0 : 0] wea
+    .addra(block_ram_addr[18:0]),  // input wire [18 : 0] addra
+    .dina(block_ram_data[7:0]),    // input wire [7 : 0] dina
+    .clkb(clk_10M),    // input wire clkb
+    .enb(1),      // input wire enb
+    .addrb(addrb),  // input wire [18 : 0] addrb
+    .doutb(doutb)  // output wire [7 : 0] doutb
+  );
+
+  // ???????????????? 800x600@75Hz?????????? 50MHz
+  logic [11:0] hdata;
+  logic [11:0] vdata;
+  assign video_red = doutb[2:0];
+  assign video_green = doutb[5:3];
+  assign video_blue = doutb[7:6];
+  
+  assign video_clk   = clk_10M;
+
+  vga #(12, 800, 856, 976, 1040, 600, 637, 643, 666, 1, 1) vga800x600at75 (
+      .clk        (video_clk),
+      .hdata      (hdata),        // ??????
+      .vdata      (vdata),             // ??????
+      .hsync      (video_hsync),
+      .vsync      (video_vsync),
+      .data_enable(video_de),
+      .addr       (addrb)
+  );
   /* =========== Demo code end =========== */
 
   logic sys_clk;
