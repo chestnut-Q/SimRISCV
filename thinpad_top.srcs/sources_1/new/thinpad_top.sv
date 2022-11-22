@@ -1,58 +1,66 @@
 `default_nettype none
 
 module thinpad_top (
-    input wire clk_50M,     // 50MHz ʱ������
-    input wire clk_11M0592, // 11.0592MHz ʱ�����루���ã��ɲ��ã�
+    input wire clk_50M,     // 50MHz ???????
+    input wire clk_11M0592, // 11.0592MHz ??????????????????
 
-    input wire push_btn,  // BTN5 ��ť���أ���������·������ʱΪ 1
-    input wire reset_btn, // BTN6 ��λ��ť����������·������ʱΪ 1
+    input wire push_btn,  // BTN5 ????????????????�???????? 1
+    input wire reset_btn, // BTN6 ????????????????�???????? 1
 
-    input  wire [ 3:0] touch_btn,  // BTN1~BTN4����ť���أ�����ʱΪ 1
-    input  wire [31:0] dip_sw,     // 32 λ���뿪�أ�������ON��ʱΪ 1
-    output wire [15:0] leds,       // 16 λ LED�����ʱ 1 ����
-    output wire [ 7:0] dpy0,       // ����ܵ�λ�źţ�����С���㣬��� 1 ����
-    output wire [ 7:0] dpy1,       // ����ܸ�λ�źţ�����С���㣬��� 1 ����
+    input  wire [ 3:0] touch_btn,  // BTN1~BTN4???????????????? 1
+    input  wire [31:0] dip_sw,     // 32 ??????????????ON???? 1
+    output wire [15:0] leds,       // 16 ? LED?????? 1 ????
+    output wire [ 7:0] dpy0,       // ??????????????????????? 1 ????
+    output wire [ 7:0] dpy1,       // ??????????????????????? 1 ????
 
-    // CPLD ���ڿ������ź�
-    output wire uart_rdn,        // �������źţ�����Ч
-    output wire uart_wrn,        // д�����źţ�����Ч
-    input  wire uart_dataready,  // ��������׼����
-    input  wire uart_tbre,       // �������ݱ�־
-    input  wire uart_tsre,       // ���ݷ�����ϱ�־
+    // CPLD ????????????
+    output wire uart_rdn,        // ???????????????
+    output wire uart_wrn,        // ??????????????
+    input  wire uart_dataready,  // ?????????????
+    input  wire uart_tbre,       // ??????????
+    input  wire uart_tsre,       // ????????????
 
-    // BaseRAM �ź�
-    inout wire [31:0] base_ram_data,  // BaseRAM ���ݣ��� 8 λ�� CPLD ���ڿ���������
-    output wire [19:0] base_ram_addr,  // BaseRAM ��ַ
-    output wire [3:0] base_ram_be_n,  // BaseRAM �ֽ�ʹ�ܣ�����Ч�������ʹ���ֽ�ʹ�ܣ��뱣��Ϊ 0
-    output wire base_ram_ce_n,  // BaseRAM Ƭѡ������Ч
-    output wire base_ram_oe_n,  // BaseRAM ��ʹ�ܣ�����Ч
-    output wire base_ram_we_n,  // BaseRAM дʹ�ܣ�����Ч
+    // BaseRAM ???
+    inout wire [31:0] base_ram_data,  // BaseRAM ??????? 8 ??? CPLD ?????????????
+    output wire [19:0] base_ram_addr,  // BaseRAM ???
+    output wire [3:0] base_ram_be_n,  // BaseRAM ?????????????????????????????????? 0
+    output wire base_ram_ce_n,  // BaseRAM ?????????
+    output wire base_ram_oe_n,  // BaseRAM ???????????
+    output wire base_ram_we_n,  // BaseRAM ??????????
 
-    // ExtRAM �ź�
-    inout wire [31:0] ext_ram_data,  // ExtRAM ����
-    output wire [19:0] ext_ram_addr,  // ExtRAM ��ַ
-    output wire [3:0] ext_ram_be_n,  // ExtRAM �ֽ�ʹ�ܣ�����Ч�������ʹ���ֽ�ʹ�ܣ��뱣��Ϊ 0
-    output wire ext_ram_ce_n,  // ExtRAM Ƭѡ������Ч
-    output wire ext_ram_oe_n,  // ExtRAM ��ʹ�ܣ�����Ч
-    output wire ext_ram_we_n,  // ExtRAM дʹ�ܣ�����Ч
+    // ExtRAM ???
+    inout wire [31:0] ext_ram_data,  // ExtRAM ????
+    output wire [19:0] ext_ram_addr,  // ExtRAM ???
+    output wire [3:0] ext_ram_be_n,  // ExtRAM ?????????????????????????????????? 0
+    output wire ext_ram_ce_n,  // ExtRAM ?????????
+    output wire ext_ram_oe_n,  // ExtRAM ???????????
+    output wire ext_ram_we_n,  // ExtRAM ??????????
 
-    // ֱ�������ź�
-    output wire txd,  // ֱ�����ڷ��Ͷ�
-    input  wire rxd,  // ֱ�����ڽ��ն�
+    // BlockRAM ???
+    inout wire [31:0] block_ram_data,  // blockRAM ????
+    output wire [19:0] block_ram_addr,  // blockRAM ???
+    output wire [3:0] block_ram_be_n,  // blockRAM ?????????????????????????????????? 0
+    output wire block_ram_ce_n,  // blockRAM ?????????
+    output wire block_ram_oe_n,  // blockRAM ???????????
+    output wire block_ram_we_n,  // blockRAM ??????????
 
-    // Flash �洢���źţ��ο� JS28F640 оƬ�ֲ�
-    output wire [22:0] flash_a,  // Flash ��ַ��a0 ���� 8bit ģʽ��Ч��16bit ģʽ������
-    inout wire [15:0] flash_d,  // Flash ����
-    output wire flash_rp_n,  // Flash ��λ�źţ�����Ч
-    output wire flash_vpen,  // Flash д�����źţ��͵�ƽʱ���ܲ�������д
-    output wire flash_ce_n,  // Flash Ƭѡ�źţ�����Ч
-    output wire flash_oe_n,  // Flash ��ʹ���źţ�����Ч
-    output wire flash_we_n,  // Flash дʹ���źţ�����Ч
-    output wire flash_byte_n, // Flash 8bit ģʽѡ�񣬵���Ч����ʹ�� flash �� 16 λģʽʱ����Ϊ 1
+    // ??????????
+    output wire txd,  // ???????????
+    input  wire rxd,  // ???????????
 
-    // USB �������źţ��ο� SL811 оƬ�ֲ�
+    // Flash ??????????? JS28F640 ?????
+    output wire [22:0] flash_a,  // Flash ?????a0 ???? 8bit ???????16bit ????????
+    inout wire [15:0] flash_d,  // Flash ????
+    output wire flash_rp_n,  // Flash ????????????
+    output wire flash_vpen,  // Flash ??????????????????????????
+    output wire flash_ce_n,  // Flash ???????????
+    output wire flash_oe_n,  // Flash ??????????????
+    output wire flash_we_n,  // Flash ?????????????
+    output wire flash_byte_n, // Flash 8bit ???????????????? flash ?? 16 ????????? 1
+
+    // USB ????????????? SL811 ?????
     output wire sl811_a0,
-    // inout  wire [7:0] sl811_d,     // USB ������������������� dm9k_sd[7:0] ����
+    // inout  wire [7:0] sl811_d,     // USB ??????????????????? dm9k_sd[7:0] ????
     output wire sl811_wr_n,
     output wire sl811_rd_n,
     output wire sl811_cs_n,
@@ -61,7 +69,7 @@ module thinpad_top (
     input  wire sl811_intrq,
     input  wire sl811_drq_n,
 
-    // ����������źţ��ο� DM9000A оƬ�ֲ�
+    // ???????????????? DM9000A ?????
     output wire dm9k_cmd,
     inout wire [15:0] dm9k_sd,
     output wire dm9k_iow_n,
@@ -70,34 +78,34 @@ module thinpad_top (
     output wire dm9k_pwrst_n,
     input wire dm9k_int,
 
-    // ͼ������ź�
-    output wire [2:0] video_red,    // ��ɫ���أ�3 λ
-    output wire [2:0] video_green,  // ��ɫ���أ�3 λ
-    output wire [1:0] video_blue,   // ��ɫ���أ�2 λ
-    output wire       video_hsync,  // ��ͬ����ˮƽͬ�����ź�
-    output wire       video_vsync,  // ��ͬ������ֱͬ�����ź�
-    output wire       video_clk,    // ����ʱ�����
-    output wire       video_de      // ��������Ч�źţ���������������
+    // ?????????
+    output wire [2:0] video_red,    // ????????3 ?
+    output wire [2:0] video_green,  // ????????3 ?
+    output wire [1:0] video_blue,   // ????????2 ?
+    output wire       video_hsync,  // ?????????????????
+    output wire       video_vsync,  // ??????????????????
+    output wire       video_clk,    // ??????????
+    output wire       video_de      // ???????????????????????????
 );
 
   /* =========== Demo code begin =========== */
 
-  // PLL ��Ƶʾ��
+  // PLL ??????
   logic locked, clk_10M, clk_20M;
   pll_example clock_gen (
       // Clock in ports
-      .clk_in1(clk_50M),  // �ⲿʱ������
+      .clk_in1(clk_50M),  // ?????????
       // Clock out ports
-      .clk_out1(clk_10M),  // ʱ����� 1��Ƶ���� IP ���ý���������
-      .clk_out2(clk_20M),  // ʱ����� 2��Ƶ���� IP ���ý���������
+      .clk_out1(clk_10M),  // ?????? 1??????? IP ?????????????
+      .clk_out2(clk_20M),  // ?????? 2??????? IP ?????????????
       // Status and control signals
-      .reset(reset_btn),  // PLL ��λ����
-      .locked(locked)  // PLL ����ָʾ�����"1"��ʾʱ���ȶ���
-                       // �󼶵�·��λ�ź�Ӧ���������ɣ����£�
+      .reset(reset_btn),  // PLL ???????
+      .locked(locked)  // PLL ???????????"1"???????????
+                       // ???�???????????????????????
   );
 
   logic reset_of_clk10M;
-  // �첽��λ��ͬ���ͷţ��� locked �ź�תΪ�󼶵�·�ĸ�λ reset_of_clk10M
+  // ???????????????? locked ????????�???? reset_of_clk10M
   always_ff @(posedge clk_10M or negedge locked) begin
     if (~locked) reset_of_clk10M <= 1'b1;
     else reset_of_clk10M <= 1'b0;
@@ -111,7 +119,7 @@ module thinpad_top (
   //   end
   // end
 
-  // ��ʹ���ڴ桢����ʱ��������ʹ���ź�
+  // ???????????????????????????
   // assign base_ram_ce_n = 1'b1;
   // assign base_ram_oe_n = 1'b1;
   // assign base_ram_we_n = 1'b1;
@@ -123,7 +131,7 @@ module thinpad_top (
   assign uart_rdn = 1'b1;
   assign uart_wrn = 1'b1;
 
-  // ��������ӹ�ϵʾ��ͼ��dpy1 ͬ��
+  // ?????????????????dpy1 ???
   // p=dpy0[0] // ---a---
   // c=dpy0[1] // |     |
   // d=dpy0[2] // f     b
@@ -134,29 +142,29 @@ module thinpad_top (
   // g=dpy0[7] // |     |
   //           // ---d---  p
 
-  // // 7 ���������������ʾ���� number �� 16 ������ʾ�����������
+  // // 7 ???????????????????? number ?? 16 ??????????????????
   // logic [7:0] number;
   // SEG7_LUT segL (
   //     .oSEG1(dpy0),
   //     .iDIG (number[3:0])
-  // );  // dpy0 �ǵ�λ�����
+  // );  // dpy0 ?????????
   // SEG7_LUT segH (
   //     .oSEG1(dpy1),
   //     .iDIG (number[7:4])
-  // );  // dpy1 �Ǹ�λ�����
+  // );  // dpy1 ?????????
 
   // logic [15:0] led_bits;
   // assign leds = led_bits;
 
   // always_ff @(posedge push_btn or posedge reset_btn) begin
-  //   if (reset_btn) begin  // ��λ���£����� LED Ϊ��ʼֵ
+  //   if (reset_btn) begin  // ???????????? LED ?????
   //     led_bits <= 16'h1;
-  //   end else begin  // ÿ�ΰ��°�ť���أ�LED ѭ������
+  //   end else begin  // ?????�???????LED ???????
   //     led_bits <= {led_bits[14:0], led_bits[15]};
   //   end
   // end
 
-  // // ֱ�����ڽ��շ�����ʾ����ֱ�������յ��������ٷ��ͳ�ȥ
+  // // ???????????????????????????????????????????
   // logic [7:0] ext_uart_rx;
   // logic [7:0] ext_uart_buffer, ext_uart_tx;
   // logic ext_uart_ready, ext_uart_clear, ext_uart_busy;
@@ -164,20 +172,20 @@ module thinpad_top (
 
   // assign number = ext_uart_buffer;
 
-  // // ����ģ�飬9600 �޼���λ
+  // // ???????9600 ??????
   // async_receiver #(
   //     .ClkFrequency(50000000),
   //     .Baud(9600)
   // ) ext_uart_r (
-  //     .clk           (clk_50M),         // �ⲿʱ���ź�
-  //     .RxD           (rxd),             // �ⲿ�����ź�����
-  //     .RxD_data_ready(ext_uart_ready),  // ���ݽ��յ���־
-  //     .RxD_clear     (ext_uart_clear),  // ������ձ�־
-  //     .RxD_data      (ext_uart_rx)      // ���յ���һ�ֽ�����
+  //     .clk           (clk_50M),         // ????????
+  //     .RxD           (rxd),             // ?????????????
+  //     .RxD_data_ready(ext_uart_ready),  // ???????????
+  //     .RxD_clear     (ext_uart_clear),  // ?????????
+  //     .RxD_data      (ext_uart_rx)      // ???????????????
   // );
 
-  // assign ext_uart_clear = ext_uart_ready; // �յ����ݵ�ͬʱ�������־����Ϊ������ȡ�� ext_uart_buffer ��
-  // always_ff @(posedge clk_50M) begin  // ���յ������� ext_uart_buffer
+  // assign ext_uart_clear = ext_uart_ready; // ???????????????????????????????? ext_uart_buffer ??
+  // always_ff @(posedge clk_50M) begin  // ??????????? ext_uart_buffer
   //   if (ext_uart_ready) begin
   //     ext_uart_buffer <= ext_uart_rx;
   //     ext_uart_avai   <= 1;
@@ -185,7 +193,7 @@ module thinpad_top (
   //     ext_uart_avai <= 0;
   //   end
   // end
-  // always_ff @(posedge clk_50M) begin  // �������� ext_uart_buffer ���ͳ�ȥ
+  // always_ff @(posedge clk_50M) begin  // ???????? ext_uart_buffer ??????
   //   if (!ext_uart_busy && ext_uart_avai) begin
   //     ext_uart_tx <= ext_uart_buffer;
   //     ext_uart_start <= 1;
@@ -194,28 +202,28 @@ module thinpad_top (
   //   end
   // end
 
-  // // ����ģ�飬9600 �޼���λ
+  // // ???????9600 ??????
   // async_transmitter #(
   //     .ClkFrequency(50000000),
   //     .Baud(9600)
   // ) ext_uart_t (
-  //     .clk      (clk_50M),         // �ⲿʱ���ź�
-  //     .TxD      (txd),             // �����ź����
-  //     .TxD_busy (ext_uart_busy),   // ������æ״ָ̬ʾ
-  //     .TxD_start(ext_uart_start),  // ��ʼ�����ź�
-  //     .TxD_data (ext_uart_tx)      // �����͵�����
+  //     .clk      (clk_50M),         // ????????
+  //     .TxD      (txd),             // ??????????
+  //     .TxD_busy (ext_uart_busy),   // ???????????
+  //     .TxD_start(ext_uart_start),  // ??????????
+  //     .TxD_data (ext_uart_tx)      // ???????????
   // );
 
-  // // ͼ�������ʾ���ֱ��� 800x600@75Hz������ʱ��Ϊ 50MHz
+  // // ???????????????? 800x600@75Hz?????????? 50MHz
   // logic [11:0] hdata;
-  // assign video_red   = hdata < 266 ? 3'b111 : 0;  // ��ɫ����
-  // assign video_green = hdata < 532 && hdata >= 266 ? 3'b111 : 0;  // ��ɫ����
-  // assign video_blue  = hdata >= 532 ? 2'b11 : 0;  // ��ɫ����
+  // assign video_red   = hdata < 266 ? 3'b111 : 0;  // ???????
+  // assign video_green = hdata < 532 && hdata >= 266 ? 3'b111 : 0;  // ???????
+  // assign video_blue  = hdata >= 532 ? 2'b11 : 0;  // ???????
   // assign video_clk   = clk_50M;
   // vga #(12, 800, 856, 976, 1040, 600, 637, 643, 666, 1, 1) vga800x600at75 (
   //     .clk        (clk_50M),
-  //     .hdata      (hdata),        // ������
-  //     .vdata      (),             // ������
+  //     .hdata      (hdata),        // ??????
+  //     .vdata      (),             // ??????
   //     .hsync      (video_hsync),
   //     .vsync      (video_vsync),
   //     .data_enable(video_de)
@@ -247,7 +255,7 @@ module thinpad_top (
   logic [2:0] exe_inst_type;
   logic [31:0] exe_branch_addr;
   logic [3:0] exe_alu_funct;
-  logic exe_alu_src; // alu �ĵ� 2 �������� rdata_2��0���� imm��1��
+  logic exe_alu_src; // alu ??? 2 ???????? rdata_2??0???? imm??1??
   logic [31:0] exe_imm;
   logic [31:0] exe_rdata1;
   logic [31:0] exe_rdata2;
@@ -334,7 +342,7 @@ module thinpad_top (
     .rs1_o(id_rs1),
     .rs2_o(id_rs2),
     .rd_o(id_rd),
-    .alu_src_o(id_alu_src), // alu �ĵ� 2 �������� rdata_2��0������ imm��1��
+    .alu_src_o(id_alu_src), // alu ??? 2 ???????? rdata_2??0?????? imm??1??
     .alu_funct_o(id_alu_funct),
     .inst_type_o(id_inst_type),
     .imm_o(id_imm)
@@ -396,8 +404,8 @@ module thinpad_top (
     .inst_o(mem_inst),
     .inst_type_o(mem_inst_type),
     .alu_result_o(mem_alu_result),
-    .mem_ren_o(mem_ren), // �ǣ�1����0���� mem
-    .mem_wen_o(mem_wen), // �ǣ�1����0��д mem
+    .mem_ren_o(mem_ren), // ???1????0???? mem
+    .mem_wen_o(mem_wen), // ???1????0??? mem
     .mem_addr_o(mem_addr), 
     .mem_wdata_o(mem_wdata),
     .sel_byte_o(mem_sel_byte)
@@ -411,14 +419,14 @@ module thinpad_top (
     .inst_i(mem_inst),
 	  .inst_type_i(mem_inst_type),
     .alu_result_i(mem_alu_result),
-    .mem_read_data_i(mem_rdata), // ���ڴ������
+    .mem_read_data_i(mem_rdata), // ??????????
     .logic_rf_wdata_o(mem_rf_wdata),
     .rf_wen_o(wb_rf_wen),
     .rf_wdata_o(wb_rf_wdata),
     .rf_waddr_o(wb_rd)
   );
 
-  /***********************���貿�ֿ�ʼ***************************/  
+  /***********************????????***************************/  
   logic wbm0_cyc_o;
   logic wbm0_stb_o;
   logic wbm0_ack_i;
@@ -473,6 +481,15 @@ module thinpad_top (
   logic wbs2_ack_i;
   logic wbs2_cyc_o;
 
+  logic [31:0] wbs3_adr_o;
+  logic [31:0] wbs3_dat_i;
+  logic [31:0] wbs3_dat_o;
+  logic wbs3_we_o;
+  logic [3:0] wbs3_sel_o;
+  logic wbs3_stb_o;
+  logic wbs3_ack_i;
+  logic wbs3_cyc_o;
+
   master #(
     .ADDR_WIDTH(32),
     .DATA_WIDTH(32)
@@ -484,7 +501,7 @@ module thinpad_top (
     .wdata_i('0),
     .wen_i(1'b0),
     .ren_i(1'b1),
-    .sel_byte_i(1'b0), // �ֽڣ�1�������֣�0��
+    .sel_byte_i(1'b0), // ????1?????????0??
     .init(1'b1),
     .rdata_o(if_inst),
     .wb_cyc_o(wbm0_cyc_o),
@@ -509,7 +526,7 @@ module thinpad_top (
     .wdata_i(mem_wdata),
     .wen_i(mem_wen),
     .ren_i(mem_ren),
-    .sel_byte_i(mem_sel_byte), // �ֽڣ�1�������֣�0��
+    .sel_byte_i(mem_sel_byte), // ????1?????????0??
     .init(1'b0),
     .rdata_o(mem_rdata),
     .wb_cyc_o(wbm1_cyc_o),
@@ -528,7 +545,7 @@ module thinpad_top (
     .ADDR_WIDTH(32),
     .SELECT_WIDTH(4),
     .ARB_TYPE_ROUND_ROBIN(0),
-    .ARB_LSB_HIGH_PRIORITY(0) // ����Ϊ 0 ��ʱ�� 1 �ſڵ����ȼ����ߣ�����Ϊ 1 ��ʱ�� 0 �ſڵ����ȼ������
+    .ARB_LSB_HIGH_PRIORITY(0) // ????? 0 ????? 1 ??????????????????? 1 ????? 0 ??????????????
   ) wb_arbiter_2 (
     .clk(sys_clk),
     .rst(sys_rst),
@@ -568,7 +585,7 @@ module thinpad_top (
   );
 
   /* =========== MUX begin =========== */
-  wb_mux_3 wb_mux (
+  wb_mux_4 wb_mux (
     .clk(sys_clk),
     .rst(sys_rst),
 
@@ -630,7 +647,23 @@ module thinpad_top (
     .wbs2_ack_i(wbs2_ack_i),
     .wbs2_err_i('0),
     .wbs2_rty_i('0),
-    .wbs2_cyc_o(wbs2_cyc_o)
+    .wbs2_cyc_o(wbs2_cyc_o),
+
+    // Slave interface 3 (to BlockRAM controller)
+    // Address range: 0x3000_0000 ~ 0x303F_FFFF
+    .wbs3_addr    (32'h3000_0000),
+    .wbs3_addr_msk(32'hFFC0_0000),
+
+    .wbs3_adr_o(wbs3_adr_o),
+    .wbs3_dat_i(wbs3_dat_i),
+    .wbs3_dat_o(wbs3_dat_o),
+    .wbs3_we_o (wbs3_we_o),
+    .wbs3_sel_o(wbs3_sel_o),
+    .wbs3_stb_o(wbs3_stb_o),
+    .wbs3_ack_i(wbs3_ack_i),
+    .wbs3_err_i('0),
+    .wbs3_rty_i('0),
+    .wbs3_cyc_o(wbs3_cyc_o)
   );
   /* =========== MUX end =========== */
 
@@ -687,8 +720,34 @@ module thinpad_top (
     .sram_be_n(ext_ram_be_n)
   );
 
-  // ���ڿ�����ģ��
-  // NOTE: ����޸�ϵͳʱ��Ƶ�ʣ�Ҳ��Ҫ�޸Ĵ˴���ʱ��Ƶ�ʲ���
+  sram_controller #(
+    .SRAM_ADDR_WIDTH(20),
+    .SRAM_DATA_WIDTH(32)
+  ) sram_controller_block (
+    .clk_i(sys_clk),
+    .rst_i(sys_rst),
+
+    // Wishbone slave (to MUX)
+    .wb_cyc_i(wbs3_cyc_o),
+    .wb_stb_i(wbs3_stb_o),
+    .wb_ack_o(wbs3_ack_i),
+    .wb_adr_i(wbs3_adr_o),
+    .wb_dat_i(wbs3_dat_o),
+    .wb_dat_o(wbs3_dat_i),
+    .wb_sel_i(wbs3_sel_o),
+    .wb_we_i (wbs3_we_o),
+
+    // To SRAM chip
+    .sram_addr(block_ram_addr),
+    .sram_data(block_ram_data),
+    .sram_ce_n(block_ram_ce_n),
+    .sram_oe_n(block_ram_oe_n),
+    .sram_we_n(block_ram_we_n),
+    .sram_be_n(block_ram_be_n)
+  );
+
+  // ????????????
+  // NOTE: ???????????????????????????????????
   uart_controller #(
     .CLK_FREQ(10_000_000),
     .BAUD    (115200)
@@ -711,6 +770,6 @@ module thinpad_top (
   );
   /* =========== Slaves begin =========== */
 
-  /***********************���貿�ֽ���***************************/
+  /***********************?????????***************************/
 
 endmodule
