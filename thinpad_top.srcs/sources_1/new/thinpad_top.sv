@@ -231,7 +231,7 @@ module thinpad_top (
     .addra(addra),  // input wire [18 : 0] addra
     .dina(dina),    // input wire [7 : 0] dina
     .clkb(clk_10M),    // input wire clkb
-    .enb(block_ram_ce_n),      // input wire enb
+    .enb(enb),      // input wire enb
     .addrb(addrb),  // input wire [18 : 0] addrb
     .doutb(doutb)  // output wire [7 : 0] doutb
   );
@@ -239,21 +239,30 @@ module thinpad_top (
   // ???????????????? 800x600@75Hz?????????? 50MHz
   logic [11:0] hdata;
   logic [11:0] vdata;
-  assign video_red = doutb[2:0];
-  assign video_green = doutb[5:3];
-  assign video_blue = doutb[7:6];
 
-  assign video_clk   = clk_10M;
+  assign video_clk = clk_10M;
 
   vga #(12, 800, 856, 976, 1040, 600, 637, 643, 666, 1, 1) vga800x600at75 (
       .clk        (video_clk),
+      .rst        (reset_of_clk10M),
       .hdata      (hdata),        // ??????
       .vdata      (vdata),             // ??????
       .hsync      (video_hsync),
       .vsync      (video_vsync),
-      .data_enable(video_de),
-      .addr       (addrb)
+      .data_enable(video_de)
   );
+
+  vga_show VGA_show(
+    .hdata(hdata),
+    .vdata(vdata),
+    .video_red(video_red),
+    .video_green(video_green),
+    .video_blue(video_blue),
+    .enb(enb),
+    .addrb(addrb),
+    .doutb(doutb)
+  );
+  
   /* =========== Demo code end =========== */
 
   logic sys_clk;

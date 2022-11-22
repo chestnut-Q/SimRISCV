@@ -26,42 +26,28 @@ module vga #(
     VSPP = 0
 ) (
     input wire clk,
+    input wire rst,
     output wire hsync,
     output wire vsync,
     output reg [WIDTH - 1:0] hdata,
     output reg [WIDTH - 1:0] vdata,
-    output wire data_enable,
-    output reg [18:0] addr
+    output wire data_enable
 );
 
-  // init
-  initial begin
-      hdata <= 0;
-      vdata <= 0;
-      addr <= 19'b0;
-  end
 
   // hdata
-  always @(posedge clk) begin
-    if (hdata == (HMAX - 1)) hdata <= 0;
+  always @(posedge clk or posedge rst) begin
+    if (rst) hdata <= 0;
+    else if (hdata == (HMAX - 1)) hdata <= 0;
     else hdata <= hdata + 1;
   end
 
   // vdata
   always @(posedge clk) begin
-    if (hdata == (HMAX - 1)) begin
+    if (rst) vdata <= 0;
+    else if (hdata == (HMAX - 1)) begin
       if (vdata == (VMAX - 1)) vdata <= 0;
       else vdata <= vdata + 1;
-    end
-  end
-
-  always @ (posedge clk) begin
-    if (hdata == 0 & vdata == 0) begin
-        addr <= 19'b0; 
-    end else begin
-        if (data_enable) begin
-            addr <= addr + 1;
-        end
     end
   end
 
