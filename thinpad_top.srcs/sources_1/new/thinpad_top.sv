@@ -36,13 +36,6 @@ module thinpad_top (
     output wire ext_ram_oe_n,  // ExtRAM ???????????
     output wire ext_ram_we_n,  // ExtRAM ??????????
 
-    // BlockRAM ???
-    inout wire [31:0] block_ram_data,  // blockRAM ????
-    output wire [19:0] block_ram_addr,  // blockRAM ???
-    output wire [3:0] block_ram_be_n,  // blockRAM ?????????????????????????????????? 0
-    output wire block_ram_ce_n,  // blockRAM ?????????
-    output wire block_ram_oe_n,  // blockRAM ???????????
-    output wire block_ram_we_n,  // blockRAM ??????????
 
     // ??????????
     output wire txd,  // ???????????
@@ -214,6 +207,13 @@ module thinpad_top (
   //     .TxD_data (ext_uart_tx)      // ???????????
   // );
 
+  // BlockRAM ???
+  logic [31:0] block_ram_data;  // blockRAM ????
+  logic [19:0] block_ram_addr;  // blockRAM ???
+  logic [3:0] block_ram_be_n;  // blockRAM ?????????????????????????????????? 0
+  logic block_ram_ce_n;  // blockRAM ?????????
+  logic block_ram_oe_n;  // blockRAM ???????????
+  logic block_ram_we_n;  // blockRAM ??????????
 
   logic wea;
   logic [18:0] addra;
@@ -221,15 +221,17 @@ module thinpad_top (
 
   logic [18:0] addrb;
   logic [7:0] doutb;
+  assign addra = block_ram_addr[18:0];
+  assign dina = block_ram_data[7:0];
 
   blk_mem_gen blk (
     .clka(clk_10M),    // input wire clka
-    .ena(1),      // input wire ena
+    .ena(block_ram_ce_n),      // input wire ena
     .wea(!block_ram_we_n),      // input wire [0 : 0] wea
-    .addra(block_ram_addr[18:0]),  // input wire [18 : 0] addra
-    .dina(block_ram_data[7:0]),    // input wire [7 : 0] dina
+    .addra(addra),  // input wire [18 : 0] addra
+    .dina(dina),    // input wire [7 : 0] dina
     .clkb(clk_10M),    // input wire clkb
-    .enb(1),      // input wire enb
+    .enb(block_ram_ce_n),      // input wire enb
     .addrb(addrb),  // input wire [18 : 0] addrb
     .doutb(doutb)  // output wire [7 : 0] doutb
   );
@@ -240,7 +242,7 @@ module thinpad_top (
   assign video_red = doutb[2:0];
   assign video_green = doutb[5:3];
   assign video_blue = doutb[7:6];
-  
+
   assign video_clk   = clk_10M;
 
   vga #(12, 800, 856, 976, 1040, 600, 637, 643, 666, 1, 1) vga800x600at75 (
