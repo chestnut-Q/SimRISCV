@@ -1,4 +1,3 @@
-`include "macro.vh"
 module vga_show (
     input wire[11:0] hdata,
     input wire[11:0] vdata,

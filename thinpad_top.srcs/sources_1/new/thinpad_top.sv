@@ -239,12 +239,13 @@ module thinpad_top (
   // ???????????????? 800x600@75Hz?????????? 50MHz
   logic [11:0] hdata;
   logic [11:0] vdata;
+  logic enb;
 
-  assign video_clk = clk_10M;
+  assign video_clk = clk_50M;
 
   vga #(12, 800, 856, 976, 1040, 600, 637, 643, 666, 1, 1) vga800x600at75 (
       .clk        (video_clk),
-      .rst        (reset_of_clk10M),
+      .rst        (reset_btn),
       .hdata      (hdata),        // ??????
       .vdata      (vdata),             // ??????
       .hsync      (video_hsync),
