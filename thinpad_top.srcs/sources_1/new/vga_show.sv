@@ -25,10 +25,12 @@ always_comb begin
     //     video_green = doutb[5:3];
     //     video_blue = doutb[7:6];
     // end
-    assign video_red   = hdata < 266 ? 3'b111 : 0;  // 红色竖条
-    assign video_green = hdata < 532 && hdata >= 266 ? 3'b111 : 0;  // 绿色竖条
-    assign video_blue  = hdata >= 532 ? 2'b11 : 0;  // 蓝色竖条
+    
 
 end
+
+assign video_red   = hdata < 266 ? 3'b111 : 0;  // 红色竖条
+assign video_green = hdata < 532 && hdata >= 266 ? 3'b111 : 0;  // 绿色竖条
+assign video_blue  = hdata >= 532 ? 2'b11 : 0;  // 蓝色竖条
     
 endmodule
