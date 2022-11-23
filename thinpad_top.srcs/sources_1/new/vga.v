@@ -36,13 +36,13 @@ module vga #(
 
   // hdata
   always @(posedge clk ) begin
-    else if (hdata == (HMAX - 1)) hdata <= 0;
+    if (hdata == (HMAX - 1)) hdata <= 0;
     else hdata <= hdata + 1;
   end
 
   // vdata
   always @(posedge clk ) begin
-    else if (hdata == (HMAX - 1)) begin
+    if (hdata == (HMAX - 1)) begin
       if (vdata == (VMAX - 1)) vdata <= 0;
       else vdata <= vdata + 1;
     end
