@@ -245,7 +245,6 @@ module thinpad_top (
 
   vga #(12, 800, 856, 976, 1040, 600, 637, 643, 666, 1, 1) vga800x600at75 (
       .clk        (video_clk),
-      .rst        (reset_btn),
       .hdata      (hdata),        // ??????
       .vdata      (vdata),             // ??????
       .hsync      (video_hsync),

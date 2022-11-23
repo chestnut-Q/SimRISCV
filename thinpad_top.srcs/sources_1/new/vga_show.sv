@@ -15,18 +15,20 @@ always_comb begin
     video_blue = 2'b1;
     enb = 1;
     addrb = 19'b0;
-    if(hdata >= 0 && hdata <= 799 && vdata >= 0 && vdata <= 599) begin
-        // video_red = show[(vdata - 300) / 16 * 5 + (hdata - 360) / 16] * 7;
-        // video_green = show[(vdata - 300) / 16 * 5 + (hdata - 360) / 16] * 7;
-        // video_blue = show[(vdata - 300) / 16 * 5 + (hdata - 360) / 16] * 3;
-        enb = 1;
-        addrb = (hdata - 0) / 2 + (vdata - 0) / 2 * 400  + 1;
-        if(addrb == 120000) 
-            addrb = 0;
-        video_red = doutb[2:0];
-        video_green = doutb[5:3];
-        video_blue = doutb[7:6];
-    end
+    // if(hdata >= 0 && hdata <= 799 && vdata >= 0 && vdata <= 599) begin
+    //     // video_red = show[(vdata - 300) / 16 * 5 + (hdata - 360) / 16] * 7;
+    //     // video_green = show[(vdata - 300) / 16 * 5 + (hdata - 360) / 16] * 7;
+    //     // video_blue = show[(vdata - 300) / 16 * 5 + (hdata - 360) / 16] * 3;
+    //     enb = 1;
+    addrb = (hdata - 0) / 2 + (vdata - 0) / 2 * 400  + 1;
+    //     video_red = doutb[2:0];
+    //     video_green = doutb[5:3];
+    //     video_blue = doutb[7:6];
+    // end
+    assign video_red   = hdata < 266 ? 3'b111 : 0;  // 红色竖条
+    assign video_green = hdata < 532 && hdata >= 266 ? 3'b111 : 0;  // 绿色竖条
+    assign video_blue  = hdata >= 532 ? 2'b11 : 0;  // 蓝色竖条
+
 end
     
 endmodule
