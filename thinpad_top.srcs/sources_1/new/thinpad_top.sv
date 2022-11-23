@@ -209,7 +209,7 @@ module thinpad_top (
 
   // BlockRAM ???
   logic [31:0] block_ram_data;  // blockRAM ????
-  logic [19:0] block_ram_addr;  // blockRAM ???
+  logic [18:0] block_ram_addr;  // blockRAM ???
   logic [3:0] block_ram_be_n;  // blockRAM ?????????????????????????????????? 0
   logic block_ram_ce_n;  // blockRAM ?????????
   logic block_ram_oe_n;  // blockRAM ???????????
@@ -221,7 +221,7 @@ module thinpad_top (
 
   logic [18:0] addrb;
   logic [7:0] doutb;
-  assign addra = block_ram_addr[18:0];
+  assign addra = block_ram_addr;
   assign dina = block_ram_data[7:0];
 
   blk_mem_gen blk (
@@ -755,10 +755,10 @@ module thinpad_top (
     .sram_be_n(ext_ram_be_n)
   );
 
-  sram_controller #(
+  sram_controller_block #(
     .SRAM_ADDR_WIDTH(20),
     .SRAM_DATA_WIDTH(32)
-  ) sram_controller_block (
+  ) sram_controller_blk (
     .clk_i(sys_clk),
     .rst_i(sys_rst),
 
@@ -777,8 +777,7 @@ module thinpad_top (
     .sram_data(block_ram_data),
     .sram_ce_n(block_ram_ce_n),
     .sram_oe_n(block_ram_oe_n),
-    .sram_we_n(block_ram_we_n),
-    .sram_be_n(block_ram_be_n)
+    .sram_we_n(block_ram_we_n)
   );
 
   // ????????????
