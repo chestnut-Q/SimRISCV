@@ -26,7 +26,7 @@ module EXE (
   );
 
   always_comb begin
-    alu_a = (inst_i[6:0] == `OP_AUIPC || inst_i == `TYPE_J) ? PC_i : rdata1_i;
+    alu_a = (inst_i[6:0] == `OP_AUIPC || inst_type_i == `TYPE_J) ? PC_i : rdata1_i;
     alu_b = (alu_src_i == `EN_Imm) ? imm_i : rdata2_i;
     alu_op = alu_funct_i;
     alu_result_o = alu_result;
