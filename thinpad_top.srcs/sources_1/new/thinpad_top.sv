@@ -357,24 +357,24 @@ module thinpad_top (
     .PC_o(exe_PC) // AUIPC
   );
 
-  EXE EXE (
-    .inst_i(exe_inst),
-    .inst_type_i(exe_inst_type),
-    .PC_i(exe_PC),
-    .rdata1_i(exe_rdata1),
-    .rdata2_i(exe_rdata2),
-    .alu_src_i(exe_alu_src),
-    .imm_i(exe_imm),
-    .alu_funct_i(exe_alu_funct),
-    .alu_result_o(exe_alu_result)
-  );
-
-  // ALU ALU(
-  //   .a((exe_inst[6:0] == `OP_AUIPC || exe_inst_type == `TYPE_J) ? exe_PC : exe_rdata1), // AUIPC
-  //   .b(exe_alu_src == `EN_Imm ? exe_imm : exe_rdata2),
-  //   .op(exe_alu_funct),
-  //   .y(exe_alu_result)
+  // EXE EXE (
+  //   .inst_i(exe_inst),
+  //   .inst_type_i(exe_inst_type),
+  //   .PC_i(exe_PC),
+  //   .rdata1_i(exe_rdata1),
+  //   .rdata2_i(exe_rdata2),
+  //   .alu_src_i(exe_alu_src),
+  //   .imm_i(exe_imm),
+  //   .alu_funct_i(exe_alu_funct),
+  //   .alu_result_o(exe_alu_result)
   // );
+
+  ALU ALU(
+    .a((exe_inst[6:0] == `OP_AUIPC || exe_inst_type == `TYPE_J) ? exe_PC : exe_rdata1), // AUIPC
+    .b(exe_alu_src == `EN_Imm ? exe_imm : exe_rdata2),
+    .op(exe_alu_funct),
+    .y(exe_alu_result)
+  );
 
   EXE_MEM_controller EXE_MEM_controller(
     .clk_i(sys_clk),
