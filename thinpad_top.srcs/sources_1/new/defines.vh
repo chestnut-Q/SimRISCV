@@ -1,6 +1,7 @@
 // Constants
 `define NOP 32'h00000013
 `define StartInstAddr 32'h80000000
+`define FENCEI 32'h0000100f
 
 `define WIDTH_INST_TYPE 2:0
 `define WIDTH_ALU_FUNCT 3:0

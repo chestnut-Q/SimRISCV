@@ -1,4 +1,5 @@
 `default_nettype none
+`include "defines.vh"
 
 // 2 路组相联
 
@@ -63,6 +64,14 @@ module I_cache #(
                 cache_data[2*cpu_req_index][V] <= 1'b1;
                 cache_data[2*cpu_req_index][DataMSB:DataLSB] <= mem_req_data_i;
                 cache_data[2*cpu_req_index][TagMSB:TagLSB] <= cpu_req_tag;
+                cache_data[2*cpu_req_index+1][V] <= cache_data[2*cpu_req_index][V];
+                cache_data[2*cpu_req_index+1][DataMSB:DataLSB] <= cache_data[2*cpu_req_index][DataMSB:DataLSB];
+                cache_data[2*cpu_req_index+1][TagMSB:TagLSB] <= cache_data[2*cpu_req_index][TagMSB:TagLSB];
+            end
+            if (cpu_req_data_o == `FENCEI && already_o) begin
+                for (i = 0; i < CACHE_CAPACITY; i = i + 1) begin
+                    cache_data[i][V] <= 1'b0;
+                end
             end
         end
     end
