@@ -10,6 +10,7 @@ module IF_master #(
 
     input wire stall,
     input wire [ADDR_WIDTH-1:0] addr_i,
+    input wire ren_i,
     output reg [DATA_WIDTH-1:0] rdata_o,
 
     output reg wb_cyc_o,
@@ -47,7 +48,11 @@ module IF_master #(
 	always_comb begin
 		case (state)
 			IDLE: begin
-                state_n = READ_SRAM_ACTION;
+                if (ren_i) begin
+                    state_n = READ_SRAM_ACTION;
+                end else begin
+                    state_n = IDLE;
+                end
 			end
             READ_SRAM_ACTION: begin
                 if (wb_ack_i) begin
@@ -57,11 +62,7 @@ module IF_master #(
                 end
             end
             DONE: begin
-                if (!stall) begin
-                    state_n = IDLE;
-                end else begin
-                    state_n = DONE;
-                end
+                state_n = IDLE;
             end
             default: state_n = IDLE;
 		endcase
@@ -74,6 +75,6 @@ module IF_master #(
     assign wb_dat_o = '0;
     assign wb_sel_o = 4'b1111;
     assign wb_we_o = 1'b0;
-    assign already_o = (state == DONE);
+    assign already_o = (state == DONE || !ren_i);
 
 endmodule

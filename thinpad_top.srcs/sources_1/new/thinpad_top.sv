@@ -269,9 +269,10 @@ module thinpad_top (
   logic [4:0] flush;
   logic [1:0] rdata1_bypass;
   logic [1:0] rdata2_bypass;
+  logic I_cache_already;
 
   stall_controller stall_controller (
-    .if_master_already_i(if_master_already),
+    .if_master_already_i(I_cache_already),
     .mem_master_already_i(mem_master_already),
     .id_inst_i(id_inst),
     .id_inst_type_i(id_inst_type),
@@ -396,6 +397,27 @@ module thinpad_top (
     .rf_waddr_o(wb_rd)
   );
 
+  logic [31:0] if_mem_req_addr;
+  logic [31:0] if_mem_req_data;
+  logic if_mem_req_valid;
+
+  I_cache #(
+    .CACHE_CAPACITY(32)
+  ) I_cache(
+    .clk_i(sys_clk),
+    .rst_i(sys_rst),
+    //to mem
+    .mem_req_addr_o(if_mem_req_addr),
+    .mem_req_valid_o(if_mem_req_valid),
+    .mem_req_data_i(if_mem_req_data),
+    .mem_req_ready_i(if_master_already),
+    //to CPU
+    .cpu_req_addr_i(if_PC),
+    .cpu_req_valid_i(1'b1),
+    .cpu_req_data_o(if_inst),
+    .already_o(I_cache_already)
+  );
+
   /***********************外设部分开始***************************/  
   logic wbm0_cyc_o;
   logic wbm0_stb_o;
@@ -493,9 +515,10 @@ module thinpad_top (
   ) cpu_if_master (
     .clk_i(sys_clk),
     .rst_i(sys_rst),
-    .stall(stall[0]),
-    .addr_i(if_PC),
-    .rdata_o(if_inst),
+    .stall(1'b0),
+    .addr_i(if_mem_req_addr),
+    .ren_i(if_mem_req_valid),
+    .rdata_o(if_mem_req_data),
     .wb_cyc_o(wbm0_cyc_o),
     .wb_stb_o(wbm0_stb_o),
     .wb_ack_i(wbm0_ack_i),
