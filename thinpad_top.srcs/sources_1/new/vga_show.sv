@@ -23,9 +23,9 @@ always_comb begin
         addrb = (hdata - 0) / 2 + (vdata - 0) / 2 * 400  + 1;
         if(addrb == 120000) 
             addrb = 0;
-        video_red = doutb[2:0];
-        video_green = doutb[5:3];
-        video_blue = doutb[7:6];
+        video_blue = doutb[1:0];
+        video_green = doutb[4:2];
+        video_red = doutb[7:5];
     end
 end
     

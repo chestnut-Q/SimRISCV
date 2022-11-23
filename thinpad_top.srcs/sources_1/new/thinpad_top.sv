@@ -226,12 +226,12 @@ module thinpad_top (
 
   blk_mem_gen blk (
     .clka(clk_10M),    // input wire clka
-    .ena(block_ram_ce_n),      // input wire ena
+    .ena(1),      // input wire ena
     .wea(!block_ram_we_n),      // input wire [0 : 0] wea
     .addra(addra),  // input wire [18 : 0] addra
     .dina(dina),    // input wire [7 : 0] dina
     .clkb(clk_10M),    // input wire clkb
-    .enb(enb),      // input wire enb
+    .enb(1),      // input wire enb
     .addrb(addrb),  // input wire [18 : 0] addrb
     .doutb(doutb)  // output wire [7 : 0] doutb
   );
