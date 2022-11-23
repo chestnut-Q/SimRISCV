@@ -10,9 +10,6 @@ module vga_show (
 );
 
 always_comb begin
-    video_red = 3'b1;
-    video_green = 3'b1;
-    video_blue = 2'b1;
     enb = 1;
     addrb = 19'b0;
     // if(hdata >= 0 && hdata <= 799 && vdata >= 0 && vdata <= 599) begin
