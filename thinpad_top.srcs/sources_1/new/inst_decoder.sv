@@ -64,7 +64,10 @@ module inst_decoder (
         aluSRA = 8,
         aluROL = 9,
         jump = 10, //Jָ�pc+4
-        aluLUI = 11
+        aluLUI = 11,
+        aluANDN = 12,
+        aluSBCLR = 13,
+        aluCLZ = 14
     } alu_funct_t;
 
     alu_funct_t alu_funct;
@@ -81,7 +84,13 @@ module inst_decoder (
                             default: alu_funct = aluADD;
                         endcase
                     end
-                    3'b001: alu_funct = aluSLL;
+                    3'b001: begin
+                        case (funct7)
+                            7'b0000000: alu_funct = aluSLL;
+                            7'b0100100: alu_funct = aluSBCLR; 
+                            default: alu_funct = aluSLL;
+                        endcase
+                    end
                     3'b100: alu_funct = aluXOR;
                     3'b101: begin
                         case (funct7)
@@ -91,7 +100,13 @@ module inst_decoder (
                         endcase 
                     end
                     3'b110: alu_funct = aluOR;
-                    3'b111: alu_funct = aluAND;
+                    3'b111: begin
+                        case (funct7)
+                            7'b0000000: alu_funct = aluAND;
+                            7'b0100000: alu_funct = aluANDN;
+                            default: alu_funct = aluAND;
+                        endcase    
+                    end
                     default: alu_funct = aluADD;
                 endcase
             end
@@ -101,7 +116,13 @@ module inst_decoder (
                     3'b100: alu_funct = aluXOR;
                     3'b110: alu_funct = aluOR;
                     3'b111: alu_funct = aluAND;
-                    3'b001: alu_funct = aluSLL;
+                    3'b001: begin
+                        case (funct7)
+                            7'b0000000: alu_funct = aluSLL;
+                            7'b0110000: alu_funct = aluCLZ;
+                            default: alu_funct = aluSLL;
+                        endcase
+                    end
                     3'b101: alu_funct = aluSRL;
                     default: alu_funct = aluADD;
                 endcase

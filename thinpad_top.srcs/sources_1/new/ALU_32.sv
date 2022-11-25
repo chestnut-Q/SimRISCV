@@ -19,9 +19,23 @@ module ALU_32 (
         aluSRL = 7,
         aluSRA = 8,
         aluROL = 9,
-        jump = 10, //J指令，pc+4
-        aluLUI = 11
+        jump = 10, //J-type
+        aluLUI = 11,
+        aluANDN = 12,
+        aluSBCLR = 13,
+        aluCLZ = 14
     } alu_funct_t;
+
+    integer i;
+    logic [31:0] count;
+    always_comb begin
+        for(i = 0; i < 32; i = i + 1) begin
+            if((a << i) >> 32'h1F) begin
+                count = i;
+            end
+        end
+    end
+    
 
     always_comb begin
         case (op)
@@ -37,6 +51,9 @@ module ALU_32 (
             aluROL: y = (a << b[4:0]) | (a >> (32 - b[4:0])); 
             jump: y = a + 4;
             aluLUI: y = b;
+            aluANDN: y = a & ~b;
+            aluSBCLR: y = a & ~(32'b1 << (b & 32'h1F));
+            aluCLZ: y = count;
             default: y = 32'd0;
         endcase
     end
