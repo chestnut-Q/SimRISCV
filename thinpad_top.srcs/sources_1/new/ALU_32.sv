@@ -34,6 +34,10 @@ module ALU_32 (
                 count = i;
             end
         end
+
+        if (!a) begin
+            count = 32'd32;
+        end
     end
     
 
