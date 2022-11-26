@@ -62,7 +62,7 @@ module D_cache #(
 
     always_comb begin
         if (state == WriteMemAll) begin
-            mem_req_addr_o = {9'b1000_0000_0, cache_data[write_all_counter-1][TagMSB:TagLSB], cpu_req_index, 2'b00};
+            mem_req_addr_o = {9'b1000_0000_0, cache_data[write_all_counter][TagMSB:TagLSB], write_all_counter[4:1], 2'b00};
         end else if (cacheable) begin
             if (state == WriteMem)
                 mem_req_addr_o = {9'b1000_0000_0, cache_data[2*cpu_req_index+1][TagMSB:TagLSB], cpu_req_index, 2'b00};
@@ -73,7 +73,7 @@ module D_cache #(
         end
 
         if (state == WriteMemAll) begin
-            mem_req_wdata_o = cache_data[write_all_counter-1][DataMSB:DataLSB];
+            mem_req_wdata_o = cache_data[write_all_counter][DataMSB:DataLSB];
         end else if (cacheable) begin
             mem_req_wdata_o = cache_data[2*cpu_req_index+1][DataMSB:DataLSB];
         end else begin
@@ -87,7 +87,7 @@ module D_cache #(
         end
 
         if (state == WriteMemAll) begin
-            mem_req_wen_o = cache_data[write_all_counter-1][D];
+            mem_req_wen_o = cache_data[write_all_counter][D];
         end else begin
             mem_req_wen_o = (state == WriteMem || (!cacheable && cpu_req_wen_i));
         end
@@ -128,12 +128,12 @@ module D_cache #(
         end else begin
             state <= state_n;
             if (state == IDLE && write_through_all) begin
-                write_all_counter <= CACHE_CAPACITY;
+                write_all_counter <= CACHE_CAPACITY - 1;
             end else if (state == WriteMemAll) begin
-                if (cache_data[write_all_counter-1][D] == 1'b0) begin
+                if (cache_data[write_all_counter][D] == 1'b0) begin
                     write_all_counter <= write_all_counter - 1;
                 end else if (mem_req_ready_i) begin
-                    cache_data[write_all_counter-1][D] <= 1'b0;
+                    cache_data[write_all_counter][D] <= 1'b0;
                     write_all_counter <= write_all_counter - 1;
                 end
             end else begin
@@ -170,9 +170,11 @@ module D_cache #(
                 end
                 if (state == Allocate && mem_req_ready_i) begin
                     cache_data[2*cpu_req_index][V] <= 1'b1;
+                    cache_data[2*cpu_req_index][D] <= 1'b0;
                     cache_data[2*cpu_req_index][DataMSB:DataLSB] <= mem_req_data_i;
                     cache_data[2*cpu_req_index][TagMSB:TagLSB] <= cpu_req_tag;
                     cache_data[2*cpu_req_index+1][V] <= cache_data[2*cpu_req_index][V];
+                    cache_data[2*cpu_req_index+1][D] <= cache_data[2*cpu_req_index][D];
                     cache_data[2*cpu_req_index+1][DataMSB:DataLSB] <= cache_data[2*cpu_req_index][DataMSB:DataLSB];
                     cache_data[2*cpu_req_index+1][TagMSB:TagLSB] <= cache_data[2*cpu_req_index][TagMSB:TagLSB];
                 end
@@ -220,7 +222,7 @@ module D_cache #(
                 end
             end
             WriteMem: state_n = mem_req_ready_i ? IDLE : WriteMem;
-            WriteMemAll: state_n = write_all_counter == 5'd0 ? IDLE : WriteMemAll;
+            WriteMemAll: state_n = (write_all_counter == 5'd0 && mem_req_ready_i) ? IDLE : WriteMemAll;
             NoCache: state_n = mem_req_ready_i ? IDLE : NoCache;
             default: state_n = IDLE;
         endcase
