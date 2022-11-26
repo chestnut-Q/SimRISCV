@@ -226,8 +226,11 @@ module thinpad_top (
   logic sys_clk;
   logic sys_rst;
 
-  assign sys_clk = clk_10M;
-  assign sys_rst = reset_of_clk10M;
+  // assign sys_clk = clk_10M;
+  // assign sys_rst = reset_of_clk10M;
+
+  assign sys_clk = clk_50M;
+  assign sys_rst = reset_btn;
 
   logic [31:0] if_PC;
   logic [31:0] if_inst;
@@ -848,7 +851,7 @@ module thinpad_top (
   // 串口控制器模块
   // NOTE: 如果修改系统时钟频率，也需要修改此处的时钟频率参数
   uart_controller #(
-    .CLK_FREQ(10_000_000),
+    .CLK_FREQ(50_000_000),
     .BAUD    (115200)
   ) uart_controller (
     .clk_i(sys_clk),
