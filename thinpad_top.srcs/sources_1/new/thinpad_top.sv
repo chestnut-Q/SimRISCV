@@ -270,10 +270,11 @@ module thinpad_top (
   logic [1:0] rdata1_bypass;
   logic [1:0] rdata2_bypass;
   logic I_cache_already;
+  logic D_cache_already;
 
   stall_controller stall_controller (
     .if_master_already_i(I_cache_already),
-    .mem_master_already_i(mem_master_already),
+    .mem_master_already_i(D_cache_already),
     .id_inst_i(id_inst),
     .id_inst_type_i(id_inst_type),
     .exe_inst_i(exe_inst),
@@ -400,6 +401,12 @@ module thinpad_top (
   logic [31:0] if_mem_req_addr;
   logic [31:0] if_mem_req_data;
   logic if_mem_req_valid;
+  logic [31:0] mem_mem_req_addr;
+  logic mem_mem_req_ren;
+  logic mem_mem_req_wen;
+  logic [31:0] mem_mem_req_wdata;
+  logic [31:0] mem_mem_req_rdata;
+  logic mem_mem_req_sel_byte;
 
   I_cache #(
     .CACHE_CAPACITY(32)
@@ -417,6 +424,31 @@ module thinpad_top (
     .cpu_req_data_o(if_inst),
     .already_o(I_cache_already)
   );
+
+  D_cache #(
+    .CACHE_CAPACITY(32)
+  ) D_cache(
+    .clk_i(sys_clk),
+    .rst_i(sys_rst),
+    .write_through_all(if_inst === `FENCE),
+    .use_dcache(1'b1),
+    //to mem
+    .mem_req_addr_o(mem_mem_req_addr),
+    .mem_req_ren_o(mem_mem_req_ren),
+    .mem_req_wen_o(mem_mem_req_wen),
+    .mem_req_wdata_o(mem_mem_req_wdata),
+    .mem_req_data_i(mem_mem_req_rdata),
+    .mem_req_ready_i(mem_master_already),
+    .mem_sel_byte_o(mem_mem_req_sel_byte),
+    //to CPU
+    .cpu_req_addr_i(mem_alu_result),
+    .cpu_req_ren_i(mem_ren),
+    .cpu_req_wen_i(mem_wen),
+    .cpu_req_wdata_i(mem_wdata),
+    .cpu_sel_byte_i(mem_sel_byte),
+    .cpu_req_data_o(mem_rdata),
+    .already_o(D_cache_already)
+);
 
   /***********************外设部分开始***************************/  
   logic wbm0_cyc_o;
@@ -536,13 +568,13 @@ module thinpad_top (
   ) cpu_mem_master (
     .clk_i(sys_clk),
     .rst_i(sys_rst),
-    .stall(stall[3]),
-    .addr_i(mem_alu_result),
-    .wdata_i(mem_wdata),
-    .wen_i(mem_wen),
-    .ren_i(mem_ren),
-    .sel_byte_i(mem_sel_byte), // 字节（1）或者字（0）
-    .rdata_o(mem_rdata),
+    .stall(1'b0),
+    .addr_i(mem_mem_req_addr),
+    .wdata_i(mem_mem_req_wdata),
+    .wen_i(mem_mem_req_wen),
+    .ren_i(mem_mem_req_ren),
+    .sel_byte_i(mem_mem_req_sel_byte), // 字节（1）或者字（0）
+    .rdata_o(mem_mem_req_rdata),
     .wb_cyc_o(wbm1_cyc_o),
     .wb_stb_o(wbm1_stb_o),
     .wb_ack_i(wbm1_ack_i),

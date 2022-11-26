@@ -48,7 +48,7 @@ module tb;
   // Windows 需要注意路径分隔符的转义，例如 "D:\\foo\\bar.bin"
   // "C:\\code\\rv-2022\\asmcode\\src.bin"
   // "C:\\code\\rv-2022\\supervisor-rv\\kernel-test\\kernel.bin"
-  parameter BASE_RAM_INIT_FILE = "C:\\code\\rv-2022\\asmcode\\src.bin"; // BaseRAM 初始化文件，请修改为实际的绝对路径
+  parameter BASE_RAM_INIT_FILE = "C:\\code\\rv-2022\\supervisor-rv\\kernel-test\\kernel.bin"; // BaseRAM 初始化文件，请修改为实际的绝对路径
   parameter EXT_RAM_INIT_FILE = "C:\\code\\project\\cod22-grp12\\testcases\\kernel.bin";  // ExtRAM 初始化文件，请修改为实际的绝对路径
   parameter FLASH_INIT_FILE = "/tmp/kernel.elf";  // Flash 初始化文件，请修改为实际的绝对路径
 
@@ -78,7 +78,7 @@ module tb;
     // #5000000;
     // uart.pc_send_byte(8'h44);
 
-    #10000;
+    #30000;
     $finish;
   end
 
