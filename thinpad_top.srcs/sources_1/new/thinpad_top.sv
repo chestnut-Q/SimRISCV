@@ -226,11 +226,11 @@ module thinpad_top (
   logic sys_clk;
   logic sys_rst;
 
-  // assign sys_clk = clk_10M;
-  // assign sys_rst = reset_of_clk10M;
+  assign sys_clk = clk_10M;
+  assign sys_rst = reset_of_clk10M;
 
-  assign sys_clk = clk_50M;
-  assign sys_rst = reset_btn;
+  // assign sys_clk = clk_50M;
+  // assign sys_rst = reset_btn;
 
   logic [31:0] if_PC;
   logic [31:0] if_inst;
