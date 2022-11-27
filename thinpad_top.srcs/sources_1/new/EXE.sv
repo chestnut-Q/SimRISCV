@@ -135,37 +135,37 @@ module EXE (
                 `CSR_MTVEC: begin
                   alu_result_o = mtvec_i;
                   mtvec_o = rdata1_i;
-                  csr_result_o = rdata1_i;
+                  csr_result_o = mtvec_i;
                 end
                 `CSR_MSCRATCH: begin
                   alu_result_o = mscratch_i;
                   mscratch_o = rdata1_i;
-                  csr_result_o = rdata1_i;
+                  csr_result_o = mscratch_i;
                 end
                 `CSR_MEPC: begin
                   alu_result_o = mepc_i;
                   mepc_o = rdata1_i;
-                  csr_result_o = rdata1_i;
+                  csr_result_o = mepc_i;
                 end
                 `CSR_MCAUSE: begin
                   alu_result_o = mcause_i;
                   mcause_o = rdata1_i;
-                  csr_result_o = rdata1_i;
+                  csr_result_o = mcause_i;
                 end
                 `CSR_MSTATUS: begin
                   alu_result_o = mstatus_i;
                   mstatus_o = rdata1_i;
-                  csr_result_o = rdata1_i;
+                  csr_result_o = mstatus_i;
                 end
                 `CSR_MIE: begin
                   alu_result_o = mie_i;
                   mie_o = rdata1_i;
-                  csr_result_o = rdata1_i;
+                  csr_result_o = mie_i;
                 end
                 `CSR_MIP: begin
                   alu_result_o = mip_i;
                   mip_o = rdata1_i;
-                  csr_result_o = rdata1_i;
+                  csr_result_o = mip_i;
                 end
                 default: begin
                 end
@@ -176,37 +176,37 @@ module EXE (
                 `CSR_MTVEC: begin
                   alu_result_o = mtvec_i;
                   mtvec_o = mtvec_i | rdata1_i;
-                  csr_result_o = mtvec_i | rdata1_i;
+                  csr_result_o = mtvec_i;
                 end
                 `CSR_MSCRATCH: begin
                   alu_result_o = mscratch_i;
                   mscratch_o = mscratch_i | rdata1_i;
-                  csr_result_o = mscratch_i | rdata1_i;
+                  csr_result_o = mscratch_i;
                 end
                 `CSR_MEPC: begin
                   alu_result_o = mepc_i;
                   mepc_o = mepc_i | rdata1_i;
-                  csr_result_o = mepc_i | rdata1_i;
+                  csr_result_o = mepc_i;
                 end
                 `CSR_MCAUSE: begin
                   alu_result_o = mcause_i;
                   mcause_o = mcause_i | rdata1_i;
-                  csr_result_o = mcause_i | rdata1_i;
+                  csr_result_o = mcause_i;
                 end
                 `CSR_MSTATUS: begin
                   alu_result_o = mstatus_i;
                   mstatus_o = mstatus_i | rdata1_i;
-                  csr_result_o = mstatus_i | rdata1_i;
+                  csr_result_o = mstatus_i;
                 end
                 `CSR_MIE: begin
                   alu_result_o = mie_i;
                   mie_o = mie_i | rdata1_i;
-                  csr_result_o = mie_i | rdata1_i;
+                  csr_result_o = mie_i;
                 end
                 `CSR_MIP: begin
                   alu_result_o = mip_i;
                   mip_o = mip_i | rdata1_i;
-                  csr_result_o = mip_i | rdata1_i;
+                  csr_result_o = mip_i;
                 end
                 default: begin
                 end
@@ -217,37 +217,37 @@ module EXE (
                 `CSR_MTVEC: begin
                   alu_result_o = mtvec_i;
                   mtvec_o = mtvec_i & ~rdata1_i;
-                  csr_result_o = mtvec_i & ~rdata1_i;
+                  csr_result_o = mtvec_i;
                 end
                 `CSR_MSCRATCH: begin
                   alu_result_o = mscratch_i;
                   mscratch_o = mscratch_i & ~rdata1_i;
-                  csr_result_o = mscratch_i & ~rdata1_i;
+                  csr_result_o = mscratch_i;
                 end
                 `CSR_MEPC: begin
                   alu_result_o = mepc_i;
                   mepc_o = mepc_i & ~rdata1_i;
-                  csr_result_o = mepc_i & ~rdata1_i;
+                  csr_result_o = mepc_i;
                 end
                 `CSR_MCAUSE: begin
                   alu_result_o = mcause_i;
                   mcause_o = mcause_i & ~rdata1_i;
-                  csr_result_o = mcause_i & ~rdata1_i;
+                  csr_result_o = mcause_i;
                 end
                 `CSR_MSTATUS: begin
                   alu_result_o = mstatus_i;
                   mstatus_o = mstatus_i & ~rdata1_i;
-                  csr_result_o = mstatus_i & ~rdata1_i;
+                  csr_result_o = mstatus_i;
                 end
                 `CSR_MIE: begin
                   alu_result_o = mie_i;
                   mie_o = mie_i & ~rdata1_i;
-                  csr_result_o = mie_i & ~rdata1_i;
+                  csr_result_o = mie_i;
                 end
                 `CSR_MIP: begin
                   alu_result_o = mip_i;
                   mip_o = mip_i & ~rdata1_i;
-                  csr_result_o = mip_i & ~rdata1_i;
+                  csr_result_o = mip_i;
                 end
                 default: begin
                 end
