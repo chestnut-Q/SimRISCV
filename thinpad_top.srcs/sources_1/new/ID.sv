@@ -47,6 +47,9 @@ module ID (
     input wire [31:0] mip_i,
     output reg mip_we,
     output reg [31:0] mip_o,
+    input wire [31:0] satp_i,
+    output reg satp_we,
+    output reg [31:0] satp_o,
     input wire [1:0] priv_level_i,
     output reg priv_level_we,
     output reg [1:0] priv_level_o
@@ -103,6 +106,8 @@ module ID (
             mie_o = 32'b0;
             mip_we = 1'b0;
             mip_o = 32'b0;
+            satp_we = 1'b0;
+            satp_o = 32'b0;
             priv_level_we = 1'b0;
             priv_level_o = 32'b0;
             alu_opcode_o = `OP_INVALID;
@@ -125,6 +130,8 @@ module ID (
             mie_o = mie_i;
             mip_we = 1'b0;
             mip_o = mip_i;
+            satp_we = 1'b0;
+            satp_o = satp_i;
             priv_level_we = 1'b0;
             priv_level_o = priv_level_i;
             csr_branch_addr_o = 32'b0;
@@ -157,6 +164,7 @@ module ID (
                                     `CSR_MSTATUS: mstatus_we = 1'b1;
                                     `CSR_MIE: mie_we = 1'b1;
                                     `CSR_MIP: mip_we = 1'b1;
+                                    `CSR_SATP: satp_we = 1'b1;
                                     default: mtvec_we = 1'b0;
                                 endcase
                             end
