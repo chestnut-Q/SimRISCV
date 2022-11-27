@@ -60,7 +60,13 @@ module inst_decoder (
                             default: alu_funct = `ALU_ADD;
                         endcase
                     end
-                    `FUNCT3_SLL: alu_funct = `ALU_SLL;
+                    `FUNCT3_SLL: begin
+                        case (funct7)
+                            `FUNCT7_SLL: alu_funct = `ALU_SLL;
+                            `FUNCT7_SBCLR: alu_funct = `ALU_SBCLR;
+                            default: alu_funct = `ALU_SLL;
+                        endcase
+                    end
                     `FUNCT3_XOR: alu_funct = `ALU_XOR;
                     `FUNCT3_SRL: begin
                         case (funct7)
@@ -70,7 +76,13 @@ module inst_decoder (
                         endcase 
                     end
                     `FUNCT3_OR: alu_funct = `ALU_OR;
-                    `FUNCT3_AND: alu_funct = `ALU_AND;
+                    `FUNCT3_AND: begin
+                        case (funct7)
+                            `FUNCT7_AND: alu_funct = `ALU_AND;
+                            `FUNCT7_ANDN: alu_funct = `ALU_ANDN;
+                            default: alu_funct = `ALU_AND;
+                        endcase
+                    end
                     `FUNCT3_SLTU: alu_funct = `ALU_LT;
                     default: alu_funct = `ALU_ADD;
                 endcase
@@ -81,7 +93,13 @@ module inst_decoder (
                     `FUNCT3_XOR: alu_funct = `ALU_XOR;
                     `FUNCT3_OR: alu_funct = `ALU_OR;
                     `FUNCT3_AND: alu_funct = `ALU_AND;
-                    `FUNCT3_SLL: alu_funct = `ALU_SLL;
+                    `FUNCT3_SLL: begin
+                        case (funct7)
+                            `FUNCT7_SLL: alu_funct = `ALU_SLL;
+                            `FUNCT7_CLZ: alu_funct = `ALU_CLZ; 
+                            default: alu_funct = `ALU_SLL;
+                        endcase
+                    end
                     `FUNCT3_SRL: alu_funct = `ALU_SRL;
                     default: alu_funct = `ALU_ADD;
                 endcase

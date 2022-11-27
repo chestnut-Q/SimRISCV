@@ -49,6 +49,11 @@
 `define FUNCT7_SUB 7'b0100000
 `define FUNCT7_SRL 7'b0000000
 `define FUNCT7_SRA 7'b0100000
+`define FUNCT7_SLL 7'b0000000
+`define FUNCT7_SBCLR 7'b0100100
+`define FUNCT7_CLZ 7'b0110000
+`define FUNCT7_AND 7'b0000000
+`define FUNCT7_ANDN 7'b0100000
 
 `define TYPE_R 3'd0
 `define TYPE_I 3'd1
@@ -72,6 +77,9 @@
 `define ALU_JUMP 4'd10 // J 指令 PC+4
 `define ALU_LUI 4'd11
 `define ALU_LT 4'd12
+`define ALU_ANDN 4'd13
+`define ALU_SBCLR 4'd14
+`define ALU_CLZ 4'd15
 
 // Currently allocated RISC-V machine-level CSR addresses
 `define CSR_MTVEC 12'h305
