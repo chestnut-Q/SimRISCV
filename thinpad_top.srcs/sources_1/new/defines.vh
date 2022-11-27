@@ -72,6 +72,9 @@
 `define ALU_JUMP 4'd10 // J 指令 PC+4
 `define ALU_LUI 4'd11
 `define ALU_LT 4'd12
+`define ALU_ANDN 4'd13
+`define ALU_SBCLR 4'd14
+`define ALU_CLZ 4'd15
 
 // Currently allocated RISC-V machine-level CSR addresses
 `define CSR_MTVEC 12'h305

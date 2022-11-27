@@ -8,6 +8,21 @@ module ALU (
     output reg [31:0] y
 );
 
+    //use for CLZ inst
+    integer i;
+    logic [31:0] count;
+    always_comb begin
+        for(i = 0; i < 32; i = i + 1) begin
+            if((a << i) >> 32'h1F) begin
+                count = i;
+            end
+        end
+
+        if (!a) begin
+            count = 32'd32;
+        end
+    end
+
     always_comb begin
         case (op)
             `ALU_ADD: y = a + b;
@@ -23,6 +38,9 @@ module ALU (
             `ALU_JUMP: y = a + 4;
             `ALU_LUI: y = b;
             `ALU_LT: y = (a < b);
+            `ALU_ANDN: y = a & ~b;
+            `ALU_SBCLR: y = a & ~(32'b1 << (b & 32'h1F));
+            `ALU_CLZ: y = count;
             default: y = 32'd0;
         endcase
     end
