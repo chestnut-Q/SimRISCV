@@ -23,17 +23,24 @@ module stall_controller (
 
     logic [4:0] id_rs1;
     logic [4:0] id_rs2;
+    logic [11:0] id_csr;
     logic [4:0] exe_rd;
+    logic [11:0] exe_csr;
     logic exe_rf_wen;
     logic [4:0] mem_rd;
+    logic [11:0] mem_csr;
     logic mem_rf_wen;
     logic exe_is_load_inst;
+    logic exe_is_csr_inst;
 
-    assign exe_rf_wen = (exe_inst_type_i == `TYPE_R || exe_inst_type_i == `TYPE_I || exe_inst_type_i == `TYPE_U || exe_inst_type_i == `TYPE_J);
+    assign exe_rf_wen = (exe_inst_type_i == `TYPE_R || exe_inst_type_i == `TYPE_I || exe_inst_type_i == `TYPE_U || exe_inst_type_i == `TYPE_J || exe_inst_i[6:0] == `OP_CSR);
     assign mem_rf_wen = (mem_inst_type_i == `TYPE_R || mem_inst_type_i == `TYPE_I || mem_inst_type_i == `TYPE_U || mem_inst_type_i == `TYPE_J);
     assign exe_rd = exe_inst_i[11:7];
     assign mem_rd = mem_inst_i[11:7];
+    assign exe_csr = (exe_inst_i[6:0] == `OP_CSR) ? exe_inst_i[31:20] : 12'b0;
+    assign mem_csr = (mem_inst_i[6:0] == `OP_CSR) ? mem_inst_i[31:20] : 12'b0;
     assign exe_is_load_inst = (exe_inst_i[6:0] == `OP_LTYPE);
+    assign exe_is_csr_inst = (exe_inst_i[6:0] == `OP_CSR);
 
     always_comb begin
         id_rs1 = 5'd0;
@@ -41,10 +48,12 @@ module stall_controller (
         if (id_inst_type_i == `TYPE_R || id_inst_type_i == `TYPE_S || id_inst_type_i == `TYPE_B) begin
             id_rs1 = id_inst_i[19:15];
             id_rs2 = id_inst_i[24:20];
-        end else if (id_inst_type_i == `TYPE_I || id_inst_i[6:0] == `OP_JALR) begin
+        end else if (id_inst_type_i == `TYPE_I || id_inst_i[6:0] == `OP_JALR || id_inst_i[6:0] == `OP_CSR) begin
             id_rs1 = id_inst_i[19:15];
         end
     end
+
+    assign id_csr = (id_inst_i[6:0] == `OP_CSR) ? id_inst_i[31:20] : 12'b0;
 
 	typedef enum logic [3:0] {
 		IDLE = 0,
@@ -68,7 +77,9 @@ module stall_controller (
             end else if ((id_inst_type_i == `TYPE_B && ((id_inst_i[14:12] == `FUNCT3_BEQ && branch_zero_i) || (id_inst_i[14:12] == `FUNCT3_BNE && !branch_zero_i))) ||
                 id_inst_i[6:0] == `OP_JALR) begin
                 flush_o[1] = 1'b1;
-            end
+                end else if (id_inst_i[6:0] == `OP_CSR && id_inst_i[14:12] == `FUNCT3_EBREAK) begin
+                    flush_o[1] = 1'b1;
+                end
         end
     end
 

@@ -46,9 +46,9 @@ module tb;
   wire uart_tsre;  // 数据发送完毕标志
 
   // Windows 需要注意路径分隔符的转义，例如 "D:\\foo\\bar.bin"
-  parameter BASE_RAM_INIT_FILE = "C:\\code\\rv-2022\\supervisor-rv\\kernel-test\\kernel.bin"; // BaseRAM 初始化文件，请修改为实际的绝对路径
-  parameter EXT_RAM_INIT_FILE = "C:\\code\\project\\cod22-grp12\\testcases\\kernel.bin";  // ExtRAM 初始化文件，请修改为实际的绝对路径
-  parameter FLASH_INIT_FILE = "/tmp/kernel.elf";  // Flash 初始化文件，请修改为实际的绝对路径
+  parameter BASE_RAM_INIT_FILE = "C:\\rv-2022\\supervisor-rv\\kernel\\kernel.bin"; // BaseRAM 初始化文件，请修改为实际的绝对路径
+  parameter EXT_RAM_INIT_FILE = "C:\\cod\\cod22-grp12\\testcases\\kernel.bin";  // ExtRAM 初始化文件，请修改为实际的绝对路径
+  parameter FLASH_INIT_FILE = "C:\\cod\\cod22-grp12\\testcases\\kernel.bin";  // Flash 初始化文件，请修改为实际的绝对路径
 
   initial begin
     // 在这里可以自定义测试输入序列，例如：
@@ -61,6 +61,7 @@ module tb;
     reset_btn = 1;
     #100;
     reset_btn = 0;
+    uart.pc_send_byte(8'h67);
     // for (integer i = 0; i < 20; i = i + 1) begin
     //   #100;  // 等待 100ns
     //   push_btn = 1;  // 按下 push_btn 按钮
@@ -74,9 +75,9 @@ module tb;
     // uart.pc_send_byte(8'h33); // ASCII '3'
 
     #5000000;
-    uart.pc_send_byte(8'h44);
+    uart.pc_send_byte(8'h67);
 
-    #1000000;
+    // #1000000;
     $finish;
   end
 

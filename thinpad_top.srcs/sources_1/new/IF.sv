@@ -13,6 +13,8 @@ module IF (
     input wire [31:0] id_rf_rdata2_i,
     input wire [31:0] id_imm_i,
     input wire [31:0] id_PC_i,
+    input wire [31:0] id_csr_branch_addr_i,
+    input wire id_csr_branch_flag_i,
     output wire [31:0] if_PC_o
 );
 
@@ -35,6 +37,8 @@ module IF (
         .PC_src_i(branch), // BEQ, BNE
         .branch_addr_i(jump ? jump_addr : branch_addr),
         .jump_i(jump), // J
+        .csr_branch_addr_i(id_csr_branch_addr_i),
+        .csr_branch_flag_i(id_csr_branch_flag_i),
         .PC_o(if_PC_o)
     );
 

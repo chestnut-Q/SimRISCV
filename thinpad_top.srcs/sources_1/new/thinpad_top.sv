@@ -229,9 +229,92 @@ module thinpad_top (
   assign sys_clk = clk_10M;
   assign sys_rst = reset_of_clk10M;
 
+   /* =========== CSR module begin =========== */
+
+  //  Machine Trap Vector: 保存发生异常时处理器需要跳转到的地址
+  wire csr_mtvec_we;
+  wire [31:0] csr_mtvec_i;
+  wire [31:0] csr_mtvec_o;
+  // Machine Exception PC: 指向发生异常的指令
+  wire csr_mepc_we; 
+  wire [31:0] csr_mepc_i;
+  wire [31:0] csr_mepc_o;
+  // Machine Exception Cause: 指示发生异常的种类
+  wire csr_mcause_we;
+  wire [31:0] csr_mcause_i;
+  wire [31:0] csr_mcause_o;
+  // Machine Interrupt Enable: 指出处理器目前能处理和必须忽略的中断
+  wire csr_mie_we;
+  wire [31:0] csr_mie_i;
+  wire [31:0] csr_mie_o;
+  // Machine Interrupt Pending: 列出目前正准备处理的中断
+  wire csr_mip_we;
+  wire [31:0] csr_mip_i;
+  wire [31:0] csr_mip_o;
+  // Machine Trap Value: 保存了陷入（trap） 的附加信息：地址例外中出错的地址、发生非法指令例外的指令本身，对于其他异常，它的值为 0
+  // Machine Scratch: 暂时存放一个字大小的数据
+  wire csr_mscratch_we;
+  wire [31:0] csr_mscratch_i;
+  wire [31:0] csr_mscratch_o;
+  // Machine Status: 它保存全局中断使能
+  wire csr_mstatus_we;
+  wire [31:0] csr_mstatus_i;
+  wire [31:0] csr_mstatus_o;
+
+  wire csr_priv_level_we;
+  wire [1:0] csr_priv_level_i;
+  wire [1:0] csr_priv_level_o;
+
+  CSR CSR (
+    .clk_i(sys_clk),
+    .rst_i(sys_rst),
+    .timer_i(interrupt),
+
+    .mtvec_we(csr_mtvec_we),
+    .mtvec_i(csr_mtvec_i),
+    .mtvec_o(csr_mtvec_o),
+
+    .mscratch_we(csr_mscratch_we),
+    .mscratch_i(csr_mscratch_i),
+    .mscratch_o(csr_mscratch_o),
+
+    .mepc_we(csr_mepc_we),
+    .mepc_i(csr_mepc_i),
+    .mepc_o(csr_mepc_o),
+
+    .mcause_we(csr_mcause_we),
+    .mcause_i(csr_mcause_i),
+    .mcause_o(csr_mcause_o),
+
+    .mstatus_we(csr_mstatus_we),
+    .mstatus_i(csr_mstatus_i),
+    .mstatus_o(csr_mstatus_o),
+
+    .mie_we(csr_mie_we),
+    .mie_i(csr_mie_i),
+    .mie_o(csr_mie_o),
+
+    .mip_we(csr_mip_we),
+    .mip_i(csr_mip_i),
+    .mip_o(csr_mip_o),
+
+    .priv_level_we(csr_priv_level_we),
+    .priv_level_i(csr_priv_level_i),
+    .priv_level_o(csr_priv_level_o)
+  );
+
+  /* =========== CSR module end =========== */
+
+  /* =========== IF module begin =========== */
+
   logic [31:0] if_PC;
   logic [31:0] if_inst;
   logic [3:0] if_master_state;
+
+  /* =========== IF module end =========== */
+
+  /* =========== ID module begin =========== */
+
   logic [31:0] id_PC;
   logic [31:0] id_inst;
   logic id_alu_src;
@@ -240,19 +323,76 @@ module thinpad_top (
   logic [31:0] id_imm;
   logic [31:0] id_rf_rdata1;
   logic [31:0] id_rf_rdata2;
+
+  wire id_mtvec_we;
+  wire id_mscratch_we;
+  wire id_mepc_we;
+  wire id_mcause_we;
+  wire id_mstatus_we;
+  wire id_mie_we;
+  wire id_mip_we;
+  wire id_priv_level_we;
+
+  wire [31:0] id_mtvec_o;
+  wire [31:0] id_mscratch_o;
+  wire [31:0] id_mepc_o;
+  wire [31:0] id_mcause_o;
+  wire [31:0] id_mstatus_o;
+  wire [31:0] id_mie_o;
+  wire [31:0] id_mip_o;
+  wire [1:0] id_priv_level_o;
+
+  wire [6:0] id_alu_opcode;
+  wire [11:0] id_csr_addr;
+  wire [2:0] id_csr_funct3;
+  wire id_csr_branch_flag;
+  wire [31:0] id_csr_branch_addr;
+
+  /* =========== ID module end =========== */
+
+  /* =========== EXE module begin =========== */
+
   logic [31:0] exe_PC;
   logic [31:0] exe_inst;
   logic [2:0] exe_inst_type;
   logic [3:0] exe_alu_funct;
-  logic exe_alu_src; // alu 的第 2 个输入是 rdata_2（0）或 imm（1）
+  logic exe_alu_src;
   logic [31:0] exe_imm;
   logic [31:0] exe_rdata1;
   logic [31:0] exe_rdata2;
   logic [31:0] exe_alu_result;
+  logic [31:0] exe_csr_result;
+
+  reg exe_mtvec_we;
+  reg [31:0] exe_mtvec_i;
+  reg exe_mscratch_we;
+  reg [31:0] exe_mscratch_i;
+  reg exe_mepc_we;
+  reg [31:0] exe_mepc_i;
+  reg exe_mcause_we;
+  reg [31:0] exe_mcause_i;
+  reg exe_mstatus_we;
+  reg [31:0] exe_mstatus_i;
+  reg exe_mie_we;
+  reg [31:0] exe_mie_i;
+  reg exe_mip_we;
+  reg [31:0] exe_mip_i;
+  reg exe_priv_level_we;
+  reg [1:0] exe_priv_level_i;
+
+  wire [6:0] exe_alu_opcode;
+  wire [11:0] exe_csr_addr;
+  wire [2:0] exe_csr_funct3;
+
+  /* =========== EXE module end =========== */
+
+  /* =========== MEM & WB module begin =========== */
+
   logic [31:0] mem_inst;
   logic [2:0] mem_inst_type;
   logic mem_PC_src;
   logic [31:0] mem_alu_result;
+  logic [31:0] mem_csr_result;
   logic [31:0] mem_branch_addr;
   logic mem_ren;
   logic mem_wen;
@@ -262,9 +402,13 @@ module thinpad_top (
   logic [31:0] mem_rdata;
   logic [3:0] mem_master_state;
   logic [31:0] mem_rf_wdata;
+
   logic [4:0] wb_rd;
   logic [31:0] wb_rf_wdata;
   logic wb_rf_wen;
+
+  /* =========== MEM & WB module end =========== */
+
   logic [4:0] stall;
   logic [4:0] flush;
   logic [1:0] rdata1_bypass;
@@ -301,6 +445,8 @@ module thinpad_top (
     .id_rf_rdata2_i(id_rf_rdata2),
     .id_imm_i(id_imm),
     .id_PC_i(id_PC),
+    .id_csr_branch_addr_i(id_csr_branch_addr),
+    .id_csr_branch_flag_i(id_csr_branch_flag),
     .if_PC_o(if_PC)
   );
 
@@ -324,14 +470,54 @@ module thinpad_top (
     .rf_wen_i(wb_rf_wen),
     .rdata1_bypass_i(rdata1_bypass),
     .rdata2_bypass_i(rdata2_bypass),
+    .exe_inst_i(exe_inst),
     .exe_alu_result_i(exe_alu_result),
+    .exe_csr_result_i(exe_csr_result),
     .mem_rf_wdata_i(mem_rf_wdata),
     .alu_src_o(id_alu_src),
     .alu_funct_o(id_alu_funct),
+    .alu_opcode_o(id_alu_opcode),
     .inst_type_o(id_inst_type),
     .imm_o(id_imm),
     .rf_rdata1_o(id_rf_rdata1),
-    .rf_rdata2_o(id_rf_rdata2)
+    .rf_rdata2_o(id_rf_rdata2),
+
+    .csr_addr_o(id_csr_addr),
+    .csr_funct3_o(id_csr_funct3),
+    .csr_branch_addr_o(id_csr_branch_addr),
+    .csr_branch_flag_o(id_csr_branch_flag),
+
+    .mtvec_i(csr_mtvec_o),
+    .mtvec_we(id_mtvec_we),
+    .mtvec_o(id_mtvec_o),
+
+    .mscratch_i(csr_mscratch_o),
+    .mscratch_we(id_mscratch_we),
+    .mscratch_o(id_mscratch_o),
+
+    .mepc_i(csr_mepc_o),
+    .mepc_we(id_mepc_we),
+    .mepc_o(id_mepc_o),
+
+    .mcause_i(csr_mcause_o),
+    .mcause_we(id_mcause_we),
+    .mcause_o(id_mcause_o),
+
+    .mstatus_i(csr_mstatus_o),
+    .mstatus_we(id_mstatus_we),
+    .mstatus_o(id_mstatus_o),
+
+    .mie_i(csr_mie_o),
+    .mie_we(id_mie_we),
+    .mie_o(id_mie_o),
+
+    .mip_i(csr_mip_o),
+    .mip_we(id_mip_we),
+    .mip_o(id_mip_o),
+    
+    .priv_level_i(csr_priv_level_o),
+    .priv_level_we(id_priv_level_we),
+    .priv_level_o(id_priv_level_o)
   );
 
   ID_EXE_controller ID_EXE_controller(
@@ -342,26 +528,122 @@ module thinpad_top (
     .PC_i(id_PC),
     .inst_i(id_inst),
     .inst_type_i(id_inst_type),
+    .alu_opcode_i(id_alu_opcode),
     .alu_funct_i(id_alu_funct),
     .alu_src_i(id_alu_src),
+    .csr_addr_i(id_csr_addr),
+    .csr_funct3_i(id_csr_funct3),
     .imm_i(id_imm),
     .rdata1_i(id_rf_rdata1),
     .rdata2_i(id_rf_rdata2),
     .inst_o(exe_inst),
     .inst_type_o(exe_inst_type),
+    .alu_opcode_o(exe_alu_opcode),
     .alu_funct_o(exe_alu_funct),
     .alu_src_o(exe_alu_src), 
+    .csr_addr_o(exe_csr_addr),
+    .csr_funct3_o(exe_csr_funct3),
     .imm_o(exe_imm),
     .rdata1_o(exe_rdata1),
     .rdata2_o(exe_rdata2),
-    .PC_o(exe_PC) // AUIPC
+    .PC_o(exe_PC), // AUIPC
+
+    .id_mtvec_we(id_mtvec_we),
+    .id_mtvec_i(id_mtvec_o),
+    .exe_mtvec_we(exe_mtvec_we),
+    .exe_mtvec_o(exe_mtvec_i),
+
+    .id_mscratch_we(id_mscratch_we),
+    .id_mscratch_i(id_mscratch_o),
+    .exe_mscratch_we(exe_mscratch_we),
+    .exe_mscratch_o(exe_mscratch_i),
+
+    .id_mepc_we(id_mepc_we),
+    .id_mepc_i(id_mepc_o),
+    .exe_mepc_we(exe_mepc_we),
+    .exe_mepc_o(exe_mepc_i),
+
+    .id_mcause_we(id_mcause_we),
+    .id_mcause_i(id_mcause_o),
+    .exe_mcause_we(exe_mcause_we),
+    .exe_mcause_o(exe_mcause_i),
+
+    .id_mstatus_we(id_mstatus_we),
+    .id_mstatus_i(id_mstatus_o),
+    .exe_mstatus_we(exe_mstatus_we),
+    .exe_mstatus_o(exe_mstatus_i),
+
+    .id_mie_we(id_mie_we),
+    .id_mie_i(id_mie_o),
+    .exe_mie_we(exe_mie_we),
+    .exe_mie_o(exe_mie_i),
+
+    .id_mip_we(id_mip_we),
+    .id_mip_i(id_mip_o),
+    .exe_mip_we(exe_mip_we),
+    .exe_mip_o(exe_mip_i),
+
+    .id_priv_level_we(id_priv_level_we),
+    .id_priv_level_i(id_priv_level_o),
+    .exe_priv_level_we(exe_priv_level_we),
+    .exe_priv_level_o(exe_priv_level_i)
   );
 
-  ALU ALU(
-    .a((exe_inst[6:0] == `OP_AUIPC || exe_inst_type == `TYPE_J) ? exe_PC : exe_rdata1), // AUIPC
-    .b(exe_alu_src == `EN_Imm ? exe_imm : exe_rdata2),
-    .op(exe_alu_funct),
-    .y(exe_alu_result)
+  EXE EXE (
+    .rst_i(sys_rst),
+    .inst_i(exe_inst),
+    .inst_type_i(exe_inst_type),
+    .PC_i(exe_PC),
+    .rdata1_i(exe_rdata1),
+    .rdata2_i(exe_rdata2),
+    .alu_src_i(exe_alu_src),
+    .alu_opcode_i(exe_alu_opcode),
+    .csr_addr_i(exe_csr_addr),
+    .csr_funct3_i(exe_csr_funct3),
+    .imm_i(exe_imm),
+    .alu_funct_i(exe_alu_funct),
+    .alu_result_o(exe_alu_result),
+    .csr_result_o(exe_csr_result),
+
+    .mtvec_i(exe_mtvec_i),
+    .mtvec_we_i(exe_mtvec_we),
+    .mtvec_o(csr_mtvec_i),
+    .mtvec_we_o(csr_mtvec_we),
+
+    .mscratch_i(exe_mscratch_i),
+    .mscratch_we_i(exe_mscratch_we),
+    .mscratch_o(csr_mscratch_i),
+    .mscratch_we_o(csr_mscratch_we),
+
+    .mepc_i(exe_mepc_i),
+    .mepc_we_i(exe_mepc_we),
+    .mepc_o(csr_mepc_i),
+    .mepc_we_o(csr_mepc_we),
+
+    .mcause_i(exe_mcause_i),
+    .mcause_we_i(exe_mcause_we),
+    .mcause_o(csr_mcause_i),
+    .mcause_we_o(csr_mcause_we),
+
+    .mstatus_i(exe_mstatus_i),
+    .mstatus_we_i(exe_mstatus_we),
+    .mstatus_o(csr_mstatus_i),
+    .mstatus_we_o(csr_mstatus_we),
+
+    .mie_i(exe_mie_i),
+    .mie_we_i(exe_mie_we),
+    .mie_o(csr_mie_i),
+    .mie_we_o(csr_mie_we),
+
+    .mip_i(exe_mip_i),
+    .mip_we_i(exe_mip_we),
+    .mip_o(csr_mip_i),
+    .mip_we_o(csr_mip_we),
+
+    .priv_level_i(exe_priv_level_i),
+    .priv_level_we_i(exe_priv_level_we),
+    .priv_level_o(csr_priv_level_i),
+    .priv_level_we_o(csr_priv_level_we)
   );
 
   EXE_MEM_controller EXE_MEM_controller(
@@ -372,10 +654,12 @@ module thinpad_top (
     .inst_i(exe_inst),
     .inst_type_i(exe_inst_type),
     .alu_result_i(exe_alu_result),
+    .csr_result_i(exe_csr_result),
     .rdata2_i(exe_rdata2),
     .inst_o(mem_inst),
     .inst_type_o(mem_inst_type),
     .alu_result_o(mem_alu_result),
+    .csr_result_o(mem_csr_result),
     .mem_ren_o(mem_ren), // 是（1）否（0）读 mem
     .mem_wen_o(mem_wen), // 是（1）否（0）写 mem
     .mem_addr_o(mem_addr), 
@@ -391,6 +675,7 @@ module thinpad_top (
     .inst_i(mem_inst),
 	  .inst_type_i(mem_inst_type),
     .alu_result_i(mem_alu_result),
+    .csr_result_i(mem_csr_result),
     .mem_read_data_i(mem_rdata), // 读内存的数据
     .logic_rf_wdata_o(mem_rf_wdata),
     .rf_wen_o(wb_rf_wen),
@@ -452,6 +737,15 @@ module thinpad_top (
   logic wbs2_stb_o;
   logic wbs2_ack_i;
   logic wbs2_cyc_o;
+
+  logic [31:0] wbs3_adr_o;
+  logic [31:0] wbs3_dat_i;
+  logic [31:0] wbs3_dat_o;
+  logic wbs3_we_o;
+  logic [3:0] wbs3_sel_o;
+  logic wbs3_stb_o;
+  logic wbs3_ack_i;
+  logic wbs3_cyc_o;
 
   master #(
     .ADDR_WIDTH(32),
@@ -548,7 +842,8 @@ module thinpad_top (
   );
 
   /* =========== MUX begin =========== */
-  wb_mux_3 wb_mux (
+
+  wb_mux_4 wb_mux (
     .clk(sys_clk),
     .rst(sys_rst),
 
@@ -610,7 +905,23 @@ module thinpad_top (
     .wbs2_ack_i(wbs2_ack_i),
     .wbs2_err_i('0),
     .wbs2_rty_i('0),
-    .wbs2_cyc_o(wbs2_cyc_o)
+    .wbs2_cyc_o(wbs2_cyc_o),
+  
+    // Slave interface 3 (to mtime and mtimecmp)
+    // Address range: 0x2004000 ~ 0x200BFF8	
+    .wbs3_addr    (32'h02004000),
+    .wbs3_addr_msk(32'hFFFF_0000),
+
+    .wbs3_adr_o(wbs3_adr_o),
+    .wbs3_dat_i(wbs3_dat_i),
+    .wbs3_dat_o(wbs3_dat_o),
+    .wbs3_we_o (wbs3_we_o),
+    .wbs3_sel_o(wbs3_sel_o),
+    .wbs3_stb_o(wbs3_stb_o),
+    .wbs3_ack_i(wbs3_ack_i),
+    .wbs3_err_i('0),
+    .wbs3_rty_i('0),
+    .wbs3_cyc_o(wbs3_cyc_o)
   );
   /* =========== MUX end =========== */
 
@@ -689,7 +1000,29 @@ module thinpad_top (
     .uart_txd_o(txd),
     .uart_rxd_i(rxd)
   );
-  /* =========== Slaves begin =========== */
+
+  wire interrupt;
+
+  wire [63:0] mtime;
+  wire [63:0] mtimecmp;
+
+  mtimer u_mtimer (
+    .clk_i(sys_clk),
+    .rst_i(sys_rst),
+
+    .interrupt_o(interrupt),
+
+    .wb_cyc_i(wbs3_cyc_o),
+    .wb_stb_i(wbs3_stb_o),
+    .wb_ack_o(wbs3_ack_i),
+    .wb_adr_i(wbs3_adr_o),
+    .wb_dat_i(wbs3_dat_o),
+    .wb_dat_o(wbs3_dat_i),
+    .wb_sel_i(wbs3_sel_o),
+    .wb_we_i (wbs3_we_o)
+  );
+
+  /* =========== Slaves end =========== */
 
   /***********************外设部分结束***************************/
 

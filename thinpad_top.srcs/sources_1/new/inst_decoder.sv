@@ -33,6 +33,8 @@ module inst_decoder (
 			inst_type = `TYPE_S;
 		end else if (opcode == `OP_JAL || opcode == `OP_JALR) begin
 			inst_type = `TYPE_J;
+        end else if (opcode == `OP_CSR) begin
+            inst_type = `TYPE_C;
         end else begin
             inst_type = `TYPE_R;
         end
@@ -69,6 +71,7 @@ module inst_decoder (
                     end
                     `FUNCT3_OR: alu_funct = `ALU_OR;
                     `FUNCT3_AND: alu_funct = `ALU_AND;
+                    `FUNCT3_SLTU: alu_funct = `ALU_LT;
                     default: alu_funct = `ALU_ADD;
                 endcase
             end
@@ -90,6 +93,14 @@ module inst_decoder (
             `OP_AUIPC: alu_funct = `ALU_ADD; // AUIPC
             `OP_JAL: alu_funct = `ALU_JUMP; // JAL
             `OP_JALR: alu_funct = `ALU_JUMP; // JALR
+            `OP_CSR: begin
+                case (funct3)
+                    `FUNCT3_CSRRC: alu_funct = `ALU_AND; // CSRRC
+                    `FUNCT3_CSRRS: alu_funct = `ALU_OR; // CSRRS
+                    default: alu_funct = `ALU_AND;
+                endcase
+            end
+            
             default: alu_funct = `ALU_ADD;
         endcase
     end

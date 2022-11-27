@@ -22,6 +22,7 @@ module ALU (
             `ALU_ROL: y = (a << b[4:0]) | (a >> (32 - b[4:0])); 
             `ALU_JUMP: y = a + 4;
             `ALU_LUI: y = b;
+            `ALU_LT: y = (a < b);
             default: y = 32'd0;
         endcase
     end

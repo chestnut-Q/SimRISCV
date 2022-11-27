@@ -10,6 +10,7 @@ module MEM_WB_controller (
     input wire [31:0] inst_i,
 	input wire [2:0] inst_type_i,
     input wire [31:0] alu_result_i,
+	input wire [31:0] csr_result_i,
     input wire [31:0] mem_read_data_i, // 读内存的数据
 	output wire [31:0] logic_rf_wdata_o,
     output reg rf_wen_o,
@@ -41,9 +42,27 @@ module MEM_WB_controller (
 		end else if (flush_i) begin
 			rf_wen_o <= '0;
 		end else begin
-            rf_wen_o <= rf_wen;
-			rf_wdata_o <= rf_wdata;
-			rf_waddr_o <= rd;
+			case (opcode)
+				`OP_CSR: begin
+					case (funct3)
+						`FUNCT3_CSRRC, `FUNCT3_CSRRW, `FUNCT3_CSRRS: begin
+							rf_wen_o <= 1'b1;
+							rf_wdata_o <= csr_result_i;
+							rf_waddr_o <= rd;
+						end
+						default: begin
+							rf_wen_o <= 1'b0;
+							rf_wdata_o <= 32'b0;
+							rf_waddr_o <= 5'b0;
+						end
+					endcase
+				end
+				default: begin
+					rf_wen_o <= rf_wen;
+					rf_wdata_o <= rf_wdata;
+					rf_waddr_o <= rd;
+				end
+			endcase
 		end
 	end
 
