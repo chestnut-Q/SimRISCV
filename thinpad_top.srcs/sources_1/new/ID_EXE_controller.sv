@@ -57,6 +57,10 @@ module ID_EXE_controller (
 	input wire [31:0] id_mip_i,
 	output reg exe_mip_we,
 	output reg [31:0] exe_mip_o,
+	input reg id_satp_we,
+	input reg [31:0] id_satp_i,
+	output reg exe_satp_we,
+	output reg [31:0] exe_satp_o,
 	input wire id_priv_level_we,
 	output reg exe_priv_level_we,
 	input wire [1:0] id_priv_level_i,
@@ -90,6 +94,8 @@ module ID_EXE_controller (
 			exe_mie_o <= 32'b0;
 			exe_mip_we <= 1'b0;
 			exe_mip_o <= 32'b0;
+			exe_satp_we <= 1'b0;
+			exe_satp_o <= 32'b0;
 			exe_priv_level_we <= 1'b0;
 			exe_priv_level_o <= 2'b0;
 		end else if (stall_i) begin
@@ -123,6 +129,8 @@ module ID_EXE_controller (
 			exe_mie_o <= id_mie_i;
 			exe_mip_we <= id_mip_we;
 			exe_mip_o <= id_mip_i;
+			exe_satp_we <= id_satp_we;
+			exe_satp_o <= id_satp_i;
 			exe_priv_level_we <= id_priv_level_we;
 			exe_priv_level_o <= id_priv_level_i;
 		end

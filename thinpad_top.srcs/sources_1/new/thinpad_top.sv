@@ -261,6 +261,10 @@ module thinpad_top (
   wire [31:0] csr_mstatus_i;
   wire [31:0] csr_mstatus_o;
 
+  wire csr_satp_we;
+  wire [31:0] csr_satp_i;
+  wire [31:0] csr_satp_o;
+
   wire csr_priv_level_we;
   wire [1:0] csr_priv_level_i;
   wire [1:0] csr_priv_level_o;
@@ -298,6 +302,10 @@ module thinpad_top (
     .mip_i(csr_mip_i),
     .mip_o(csr_mip_o),
 
+    .satp_we(csr_satp_we),
+    .satp_i(csr_satp_i),
+    .satp_o(csr_satp_o),
+
     .priv_level_we(csr_priv_level_we),
     .priv_level_i(csr_priv_level_i),
     .priv_level_o(csr_priv_level_o)
@@ -331,6 +339,7 @@ module thinpad_top (
   wire id_mstatus_we;
   wire id_mie_we;
   wire id_mip_we;
+  wire id_satp_we;
   wire id_priv_level_we;
 
   wire [31:0] id_mtvec_o;
@@ -340,6 +349,7 @@ module thinpad_top (
   wire [31:0] id_mstatus_o;
   wire [31:0] id_mie_o;
   wire [31:0] id_mip_o;
+  wire [31:0] id_satp_o;
   wire [1:0] id_priv_level_o;
 
   wire [6:0] id_alu_opcode;
@@ -377,6 +387,8 @@ module thinpad_top (
   reg [31:0] exe_mie_i;
   reg exe_mip_we;
   reg [31:0] exe_mip_i;
+  reg exe_satp_we;
+  reg [31:0] exe_satp_i;
   reg exe_priv_level_we;
   reg [1:0] exe_priv_level_i;
 
@@ -514,6 +526,10 @@ module thinpad_top (
     .mip_i(csr_mip_o),
     .mip_we(id_mip_we),
     .mip_o(id_mip_o),
+
+    .satp_i(csr_satp_o),
+    .satp_we(id_satp_we),
+    .satp_o(id_satp_o),
     
     .priv_level_i(csr_priv_level_o),
     .priv_level_we(id_priv_level_we),
@@ -583,6 +599,11 @@ module thinpad_top (
     .exe_mip_we(exe_mip_we),
     .exe_mip_o(exe_mip_i),
 
+    .id_satp_we(id_satp_we),
+    .id_satp_i(id_satp_o),
+    .exe_satp_we(exe_satp_we),
+    .exe_satp_o(exe_satp_i),
+
     .id_priv_level_we(id_priv_level_we),
     .id_priv_level_i(id_priv_level_o),
     .exe_priv_level_we(exe_priv_level_we),
@@ -639,6 +660,11 @@ module thinpad_top (
     .mip_we_i(exe_mip_we),
     .mip_o(csr_mip_i),
     .mip_we_o(csr_mip_we),
+
+    .satp_i(exe_satp_i),
+    .satp_we_i(exe_satp_we),
+    .satp_o(csr_satp_i),
+    .satp_we_o(csr_satp_we),
 
     .priv_level_i(exe_priv_level_i),
     .priv_level_we_i(exe_priv_level_we),

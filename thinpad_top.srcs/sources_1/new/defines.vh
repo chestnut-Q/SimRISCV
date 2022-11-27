@@ -91,6 +91,7 @@
 `define CSR_MEPC 12'h341
 `define CSR_MCAUSE 12'h342
 `define CSR_MIP 12'h344
+`define CSR_SATP 12'h180
 
 `define ECALL 12'h000
 `define EBREAK 12'h001
