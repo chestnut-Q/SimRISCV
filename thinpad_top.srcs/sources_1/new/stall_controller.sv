@@ -2,10 +2,10 @@
 `include "defines.vh"
 
 module stall_controller (
-    input wire [3:0] if_master_state_i,
-    input wire [3:0] mem_master_state_i,
-    input wire mem_master_wen,
-    input wire mem_master_ren,
+    // input wire [3:0] if_master_state_i,
+    // input wire [3:0] mem_master_state_i,
+    input wire if_master_already_i,
+    input wire mem_master_already_i,
     input wire [31:0] id_inst_i,
     input wire [`WIDTH_INST_TYPE] id_inst_type_i,
     input wire [31:0] exe_inst_i,
@@ -55,20 +55,11 @@ module stall_controller (
 
     assign id_csr = (id_inst_i[6:0] == `OP_CSR) ? id_inst_i[31:20] : 12'b0;
 
-	typedef enum logic [3:0] {
-		IDLE = 0,
-        READ_SRAM_ACTION = 1,
-        READ_SRAM_DONE = 2,
-		WRITE_SRAM_ACTION = 3,
-        WRITE_SRAM_DONE = 4,
-        ALREADY = 5
-	} state_t;
 
     always_comb begin
         stall_o = 5'b00000;
         flush_o = 5'b00000;
-        if (!(if_master_state_i == ALREADY &&
-            (mem_master_state_i == ALREADY || (mem_master_state_i == IDLE && !mem_master_ren && !mem_master_wen)))) begin
+        if (!if_master_already_i || !mem_master_already_i) begin
             stall_o = 5'b11111;
         end else begin
             if (exe_is_load_inst && exe_rf_wen && exe_rd != 5'd0 && (exe_rd == id_rs1 || exe_rd == id_rs2)) begin

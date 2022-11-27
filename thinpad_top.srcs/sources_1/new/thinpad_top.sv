@@ -309,7 +309,7 @@ module thinpad_top (
 
   logic [31:0] if_PC;
   logic [31:0] if_inst;
-  logic [3:0] if_master_state;
+  logic if_master_already;
 
   /* =========== IF module end =========== */
 
@@ -400,7 +400,7 @@ module thinpad_top (
   logic [31:0] mem_wdata;
   logic mem_sel_byte;
   logic [31:0] mem_rdata;
-  logic [3:0] mem_master_state;
+  logic mem_master_already;
   logic [31:0] mem_rf_wdata;
 
   logic [4:0] wb_rd;
@@ -413,12 +413,12 @@ module thinpad_top (
   logic [4:0] flush;
   logic [1:0] rdata1_bypass;
   logic [1:0] rdata2_bypass;
+  logic I_cache_already;
+  logic D_cache_already;
 
   stall_controller stall_controller (
-    .if_master_state_i(if_master_state),
-    .mem_master_state_i(mem_master_state),
-    .mem_master_wen(mem_wen),
-    .mem_master_ren(mem_ren),
+    .if_master_already_i(I_cache_already),
+    .mem_master_already_i(D_cache_already),
     .id_inst_i(id_inst),
     .id_inst_type_i(id_inst_type),
     .exe_inst_i(exe_inst),
@@ -683,7 +683,60 @@ module thinpad_top (
     .rf_waddr_o(wb_rd)
   );
 
-  /***********************外设部分开始***************************/  
+
+  logic [31:0] if_mem_req_addr;
+  logic [31:0] if_mem_req_data;
+  logic if_mem_req_valid;
+  logic [31:0] mem_mem_req_addr;
+  logic mem_mem_req_ren;
+  logic mem_mem_req_wen;
+  logic [31:0] mem_mem_req_wdata;
+  logic [31:0] mem_mem_req_rdata;
+  logic mem_mem_req_sel_byte;
+
+  I_cache #(
+    .CACHE_CAPACITY(32)
+  ) I_cache(
+    .clk_i(sys_clk),
+    .rst_i(sys_rst),
+    //to mem
+    .mem_req_addr_o(if_mem_req_addr),
+    .mem_req_valid_o(if_mem_req_valid),
+    .mem_req_data_i(if_mem_req_data),
+    .mem_req_ready_i(if_master_already),
+    //to CPU
+    .cpu_req_addr_i(if_PC),
+    .cpu_req_valid_i(1'b1),
+    .cpu_req_data_o(if_inst),
+    .already_o(I_cache_already)
+  );
+
+  D_cache #(
+    .CACHE_CAPACITY(32)
+  ) D_cache(
+    .clk_i(sys_clk),
+    .rst_i(sys_rst),
+    .write_through_all(1'b0),
+    .use_dcache(1'b0),
+    //to mem
+    .mem_req_addr_o(mem_mem_req_addr),
+    .mem_req_ren_o(mem_mem_req_ren),
+    .mem_req_wen_o(mem_mem_req_wen),
+    .mem_req_wdata_o(mem_mem_req_wdata),
+    .mem_req_data_i(mem_mem_req_rdata),
+    .mem_req_ready_i(mem_master_already),
+    .mem_sel_byte_o(mem_mem_req_sel_byte),
+    //to CPU
+    .cpu_req_addr_i(mem_alu_result),
+    .cpu_req_ren_i(mem_ren),
+    .cpu_req_wen_i(mem_wen),
+    .cpu_req_wdata_i(mem_wdata),
+    .cpu_sel_byte_i(mem_sel_byte),
+    .cpu_req_data_o(mem_rdata),
+    .already_o(D_cache_already)
+);
+
+  /***********************外设部分开始***************************/ 
   logic wbm0_cyc_o;
   logic wbm0_stb_o;
   logic wbm0_ack_i;
@@ -720,6 +773,42 @@ module thinpad_top (
   logic wbs0_ack_i;
   logic wbs0_cyc_o;
 
+  logic [31:0] wbs00_adr_o;
+  logic [31:0] wbs00_dat_i;
+  logic [31:0] wbs00_dat_o;
+  logic wbs00_we_o;
+  logic [3:0] wbs00_sel_o;
+  logic wbs00_stb_o;
+  logic wbs00_ack_i;
+  logic wbs00_cyc_o;
+
+  logic [31:0] wbs01_adr_o;
+  logic [31:0] wbs01_dat_i;
+  logic [31:0] wbs01_dat_o;
+  logic wbs01_we_o;
+  logic [3:0] wbs01_sel_o;
+  logic wbs01_stb_o;
+  logic wbs01_ack_i;
+  logic wbs01_cyc_o;
+
+  logic [31:0] wbs10_adr_o;
+  logic [31:0] wbs10_dat_i;
+  logic [31:0] wbs10_dat_o;
+  logic wbs10_we_o;
+  logic [3:0] wbs10_sel_o;
+  logic wbs10_stb_o;
+  logic wbs10_ack_i;
+  logic wbs10_cyc_o;
+
+  logic [31:0] wbs11_adr_o;
+  logic [31:0] wbs11_dat_i;
+  logic [31:0] wbs11_dat_o;
+  logic wbs11_we_o;
+  logic [3:0] wbs11_sel_o;
+  logic wbs11_stb_o;
+  logic wbs11_ack_i;
+  logic wbs11_cyc_o;
+
   logic [31:0] wbs1_adr_o;
   logic [31:0] wbs1_dat_i;
   logic [31:0] wbs1_dat_o;
@@ -747,20 +836,16 @@ module thinpad_top (
   logic wbs3_ack_i;
   logic wbs3_cyc_o;
 
-  master #(
+  IF_master #(
     .ADDR_WIDTH(32),
     .DATA_WIDTH(32)
   ) cpu_if_master (
     .clk_i(sys_clk),
     .rst_i(sys_rst),
-    .stall(stall[0]),
-    .addr_i(if_PC),
-    .wdata_i('0),
-    .wen_i(1'b0),
-    .ren_i(1'b1),
-    .sel_byte_i(1'b0), // 字节（1）或者字（0）
-    .init(1'b1),
-    .rdata_o(if_inst),
+    .stall(1'b0),
+    .addr_i(if_mem_req_addr),
+    .ren_i(if_mem_req_valid),
+    .rdata_o(if_mem_req_data),
     .wb_cyc_o(wbm0_cyc_o),
     .wb_stb_o(wbm0_stb_o),
     .wb_ack_i(wbm0_ack_i),
@@ -769,23 +854,22 @@ module thinpad_top (
     .wb_dat_i(wbm0_dat_i),
     .wb_sel_o(wbm0_sel_o),
     .wb_we_o (wbm0_we_o),
-    .state_o(if_master_state)
+    .already_o(if_master_already)
   );
 
-  master #(
+  MEM_master #(
     .ADDR_WIDTH(32),
     .DATA_WIDTH(32)
   ) cpu_mem_master (
     .clk_i(sys_clk),
     .rst_i(sys_rst),
-    .stall(stall[3]),
-    .addr_i(mem_alu_result),
-    .wdata_i(mem_wdata),
-    .wen_i(mem_wen),
-    .ren_i(mem_ren),
-    .sel_byte_i(mem_sel_byte), // 字节（1）或者字（0）
-    .init(1'b0),
-    .rdata_o(mem_rdata),
+    .stall(1'b0),
+    .addr_i(mem_mem_req_addr),
+    .wdata_i(mem_mem_req_wdata),
+    .wen_i(mem_mem_req_wen),
+    .ren_i(mem_mem_req_ren),
+    .sel_byte_i(mem_mem_req_sel_byte), // 字节（1）或者字（0）
+    .rdata_o(mem_mem_req_rdata),
     .wb_cyc_o(wbm1_cyc_o),
     .wb_stb_o(wbm1_stb_o),
     .wb_ack_i(wbm1_ack_i),
@@ -794,102 +878,107 @@ module thinpad_top (
     .wb_dat_i(wbm1_dat_i),
     .wb_sel_o(wbm1_sel_o),
     .wb_we_o (wbm1_we_o),
-    .state_o(mem_master_state)
-  );
-
-  wb_arbiter_2 #(
-    .DATA_WIDTH(32),
-    .ADDR_WIDTH(32),
-    .SELECT_WIDTH(4),
-    .ARB_TYPE_ROUND_ROBIN(0),
-    .ARB_LSB_HIGH_PRIORITY(0) // 设置为 0 的时候 1 号口的优先级更高，设置为 1 的时候 0 号口的优先级会更高
-  ) wb_arbiter_2 (
-    .clk(sys_clk),
-    .rst(sys_rst),
-    // Wishbone master 0 input
-    .wbm0_adr_i(wbm0_adr_o),
-    .wbm0_dat_i(wbm0_dat_o),
-    .wbm0_dat_o(wbm0_dat_i),
-    .wbm0_we_i(wbm0_we_o),
-    .wbm0_sel_i(wbm0_sel_o),
-    .wbm0_stb_i(wbm0_stb_o),
-    .wbm0_ack_o(wbm0_ack_i),
-    .wbm0_err_o(),
-    .wbm0_rty_o(),
-    .wbm0_cyc_i(wbm0_cyc_o),
-    // Wishbone master 1 input
-    .wbm1_adr_i(wbm1_adr_o),
-    .wbm1_dat_i(wbm1_dat_o),
-    .wbm1_dat_o(wbm1_dat_i),
-    .wbm1_we_i(wbm1_we_o),
-    .wbm1_sel_i(wbm1_sel_o),
-    .wbm1_stb_i(wbm1_stb_o),
-    .wbm1_ack_o(wbm1_ack_i),
-    .wbm1_err_o(),
-    .wbm1_rty_o(),
-    .wbm1_cyc_i(wbm1_cyc_o),
-    // Wishbone slave output
-    .wbs_adr_o(wbm_adr_o),
-    .wbs_dat_i(wbm_dat_i),
-    .wbs_dat_o(wbm_dat_o),
-    .wbs_we_o(wbm_we_o),
-    .wbs_sel_o(wbm_sel_o),
-    .wbs_stb_o(wbm_stb_o),
-    .wbs_ack_i(wbm_ack_i),
-    .wbs_err_i('0),
-    .wbs_rty_i('0),
-    .wbs_cyc_o(wbm_cyc_o)
+    .already_o(mem_master_already)
   );
 
   /* =========== MUX begin =========== */
-
-  wb_mux_4 wb_mux (
+  wb_mux_2 wb_mux_if (
     .clk(sys_clk),
     .rst(sys_rst),
 
-    // Master interface (to arbiter)
-    .wbm_adr_i(wbm_adr_o),
-    .wbm_dat_i(wbm_dat_o),
-    .wbm_dat_o(wbm_dat_i),
-    .wbm_we_i (wbm_we_o),
-    .wbm_sel_i(wbm_sel_o),
-    .wbm_stb_i(wbm_stb_o),
-    .wbm_ack_o(wbm_ack_i),
+    // Master interface (to if master)
+    .wbm_adr_i(wbm0_adr_o),
+    .wbm_dat_i(wbm0_dat_o),
+    .wbm_dat_o(wbm0_dat_i),
+    .wbm_we_i (wbm0_we_o),
+    .wbm_sel_i(wbm0_sel_o),
+    .wbm_stb_i(wbm0_stb_o),
+    .wbm_ack_o(wbm0_ack_i),
     .wbm_err_o(),
     .wbm_rty_o(),
-    .wbm_cyc_i(wbm_cyc_o),
+    .wbm_cyc_i(wbm0_cyc_o),
 
     // Slave interface 0 (to BaseRAM controller)
     // Address range: 0x8000_0000 ~ 0x803F_FFFF
     .wbs0_addr    (32'h8000_0000),
     .wbs0_addr_msk(32'hFFC0_0000),
 
-    .wbs0_adr_o(wbs0_adr_o),
-    .wbs0_dat_i(wbs0_dat_i),
-    .wbs0_dat_o(wbs0_dat_o),
-    .wbs0_we_o (wbs0_we_o),
-    .wbs0_sel_o(wbs0_sel_o),
-    .wbs0_stb_o(wbs0_stb_o),
-    .wbs0_ack_i(wbs0_ack_i),
+    .wbs0_adr_o(wbs00_adr_o),
+    .wbs0_dat_i(wbs00_dat_i),
+    .wbs0_dat_o(wbs00_dat_o),
+    .wbs0_we_o (wbs00_we_o),
+    .wbs0_sel_o(wbs00_sel_o),
+    .wbs0_stb_o(wbs00_stb_o),
+    .wbs0_ack_i(wbs00_ack_i),
     .wbs0_err_i('0),
     .wbs0_rty_i('0),
-    .wbs0_cyc_o(wbs0_cyc_o),
+    .wbs0_cyc_o(wbs00_cyc_o),
 
     // Slave interface 1 (to ExtRAM controller)
     // Address range: 0x8040_0000 ~ 0x807F_FFFF
     .wbs1_addr    (32'h8040_0000),
     .wbs1_addr_msk(32'hFFC0_0000),
 
-    .wbs1_adr_o(wbs1_adr_o),
-    .wbs1_dat_i(wbs1_dat_i),
-    .wbs1_dat_o(wbs1_dat_o),
-    .wbs1_we_o (wbs1_we_o),
-    .wbs1_sel_o(wbs1_sel_o),
-    .wbs1_stb_o(wbs1_stb_o),
-    .wbs1_ack_i(wbs1_ack_i),
+    .wbs1_adr_o(wbs01_adr_o),
+    .wbs1_dat_i(wbs01_dat_i),
+    .wbs1_dat_o(wbs01_dat_o),
+    .wbs1_we_o (wbs01_we_o),
+    .wbs1_sel_o(wbs01_sel_o),
+    .wbs1_stb_o(wbs01_stb_o),
+    .wbs1_ack_i(wbs01_ack_i),
     .wbs1_err_i('0),
     .wbs1_rty_i('0),
-    .wbs1_cyc_o(wbs1_cyc_o),
+    .wbs1_cyc_o(wbs01_cyc_o)
+  );
+
+
+  wb_mux_4 wb_mux_mem (
+    .clk(sys_clk),
+    .rst(sys_rst),
+
+    // Master interface (to mem master)
+    .wbm_adr_i(wbm1_adr_o),
+    .wbm_dat_i(wbm1_dat_o),
+    .wbm_dat_o(wbm1_dat_i),
+    .wbm_we_i (wbm1_we_o),
+    .wbm_sel_i(wbm1_sel_o),
+    .wbm_stb_i(wbm1_stb_o),
+    .wbm_ack_o(wbm1_ack_i),
+    .wbm_err_o(),
+    .wbm_rty_o(),
+    .wbm_cyc_i(wbm1_cyc_o),
+
+    // Slave interface 0 (to BaseRAM controller)
+    // Address range: 0x8000_0000 ~ 0x803F_FFFF
+    .wbs0_addr    (32'h8000_0000),
+    .wbs0_addr_msk(32'hFFC0_0000),
+
+    .wbs0_adr_o(wbs10_adr_o),
+    .wbs0_dat_i(wbs10_dat_i),
+    .wbs0_dat_o(wbs10_dat_o),
+    .wbs0_we_o (wbs10_we_o),
+    .wbs0_sel_o(wbs10_sel_o),
+    .wbs0_stb_o(wbs10_stb_o),
+    .wbs0_ack_i(wbs10_ack_i),
+    .wbs0_err_i('0),
+    .wbs0_rty_i('0),
+    .wbs0_cyc_o(wbs10_cyc_o),
+
+    // Slave interface 1 (to ExtRAM controller)
+    // Address range: 0x8040_0000 ~ 0x807F_FFFF
+    .wbs1_addr    (32'h8040_0000),
+    .wbs1_addr_msk(32'hFFC0_0000),
+
+    .wbs1_adr_o(wbs11_adr_o),
+    .wbs1_dat_i(wbs11_dat_i),
+    .wbs1_dat_o(wbs11_dat_o),
+    .wbs1_we_o (wbs11_we_o),
+    .wbs1_sel_o(wbs11_sel_o),
+    .wbs1_stb_o(wbs11_stb_o),
+    .wbs1_ack_i(wbs11_ack_i),
+    .wbs1_err_i('0),
+    .wbs1_rty_i('0),
+    .wbs1_cyc_o(wbs11_cyc_o),
 
     // Slave interface 2 (to UART controller)
     // Address range: 0x1000_0000 ~ 0x1000_FFFF
@@ -924,6 +1013,96 @@ module thinpad_top (
     .wbs3_cyc_o(wbs3_cyc_o)
   );
   /* =========== MUX end =========== */
+
+  /* =========== Arbiter begin =========== */
+  wb_arbiter_2 #(
+    .DATA_WIDTH(32),
+    .ADDR_WIDTH(32),
+    .SELECT_WIDTH(4),
+    .ARB_TYPE_ROUND_ROBIN(0),
+    .ARB_LSB_HIGH_PRIORITY(0) // 设置为 0 的时候 1 号口的优先级更高，设置为 1 的时候 0 号口的优先级会更高
+  ) wb_BaseRAM_arbiter_2 (
+    .clk(sys_clk),
+    .rst(sys_rst),
+    // Wishbone master 0 input
+    .wbm0_adr_i(wbs00_adr_o),
+    .wbm0_dat_i(wbs00_dat_o),
+    .wbm0_dat_o(wbs00_dat_i),
+    .wbm0_we_i(wbs00_we_o),
+    .wbm0_sel_i(wbs00_sel_o),
+    .wbm0_stb_i(wbs00_stb_o),
+    .wbm0_ack_o(wbs00_ack_i),
+    .wbm0_err_o(),
+    .wbm0_rty_o(),
+    .wbm0_cyc_i(wbs00_cyc_o),
+    // Wishbone master 1 input
+    .wbm1_adr_i(wbs10_adr_o),
+    .wbm1_dat_i(wbs10_dat_o),
+    .wbm1_dat_o(wbs10_dat_i),
+    .wbm1_we_i(wbs10_we_o),
+    .wbm1_sel_i(wbs10_sel_o),
+    .wbm1_stb_i(wbs10_stb_o),
+    .wbm1_ack_o(wbs10_ack_i),
+    .wbm1_err_o(),
+    .wbm1_rty_o(),
+    .wbm1_cyc_i(wbs10_cyc_o),
+    // Wishbone slave output
+    .wbs_adr_o(wbs0_adr_o),
+    .wbs_dat_i(wbs0_dat_i),
+    .wbs_dat_o(wbs0_dat_o),
+    .wbs_we_o(wbs0_we_o),
+    .wbs_sel_o(wbs0_sel_o),
+    .wbs_stb_o(wbs0_stb_o),
+    .wbs_ack_i(wbs0_ack_i),
+    .wbs_err_i('0),
+    .wbs_rty_i('0),
+    .wbs_cyc_o(wbs0_cyc_o)
+  );
+
+  wb_arbiter_2 #(
+    .DATA_WIDTH(32),
+    .ADDR_WIDTH(32),
+    .SELECT_WIDTH(4),
+    .ARB_TYPE_ROUND_ROBIN(0),
+    .ARB_LSB_HIGH_PRIORITY(0) // 设置为 0 的时候 1 号口的优先级更高，设置为 1 的时候 0 号口的优先级会更高
+  ) wb_ExtRAM_arbiter_2 (
+    .clk(sys_clk),
+    .rst(sys_rst),
+    // Wishbone master 0 input
+    .wbm0_adr_i(wbs01_adr_o),
+    .wbm0_dat_i(wbs01_dat_o),
+    .wbm0_dat_o(wbs01_dat_i),
+    .wbm0_we_i(wbs01_we_o),
+    .wbm0_sel_i(wbs01_sel_o),
+    .wbm0_stb_i(wbs01_stb_o),
+    .wbm0_ack_o(wbs01_ack_i),
+    .wbm0_err_o(),
+    .wbm0_rty_o(),
+    .wbm0_cyc_i(wbs01_cyc_o),
+    // Wishbone master 1 input
+    .wbm1_adr_i(wbs11_adr_o),
+    .wbm1_dat_i(wbs11_dat_o),
+    .wbm1_dat_o(wbs11_dat_i),
+    .wbm1_we_i(wbs11_we_o),
+    .wbm1_sel_i(wbs11_sel_o),
+    .wbm1_stb_i(wbs11_stb_o),
+    .wbm1_ack_o(wbs11_ack_i),
+    .wbm1_err_o(),
+    .wbm1_rty_o(),
+    .wbm1_cyc_i(wbs11_cyc_o),
+    // Wishbone slave output
+    .wbs_adr_o(wbs1_adr_o),
+    .wbs_dat_i(wbs1_dat_i),
+    .wbs_dat_o(wbs1_dat_o),
+    .wbs_we_o(wbs1_we_o),
+    .wbs_sel_o(wbs1_sel_o),
+    .wbs_stb_o(wbs1_stb_o),
+    .wbs_ack_i(wbs1_ack_i),
+    .wbs_err_i('0),
+    .wbs_rty_i('0),
+    .wbs_cyc_o(wbs1_cyc_o)
+  );
+  /* =========== Arbiter end =========== */
 
   /* =========== Slaves begin =========== */
   sram_controller #(
@@ -981,7 +1160,7 @@ module thinpad_top (
   // 串口控制器模块
   // NOTE: 如果修改系统时钟频率，也需要修改此处的时钟频率参数
   uart_controller #(
-    .CLK_FREQ(10_000_000),
+    .CLK_FREQ(50_000_000),
     .BAUD    (115200)
   ) uart_controller (
     .clk_i(sys_clk),
