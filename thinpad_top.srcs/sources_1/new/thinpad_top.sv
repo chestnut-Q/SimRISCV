@@ -433,8 +433,8 @@ module thinpad_top (
   ) D_cache(
     .clk_i(sys_clk),
     .rst_i(sys_rst),
-    .write_through_all(if_inst === `FENCE),
-    .use_dcache(1'b1),
+    .write_through_all(1'b0),
+    .use_dcache(1'b0),
     //to mem
     .mem_req_addr_o(mem_mem_req_addr),
     .mem_req_ren_o(mem_mem_req_ren),
