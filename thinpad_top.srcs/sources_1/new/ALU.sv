@@ -15,6 +15,7 @@ module ALU (
         for(i = 0; i < 32; i = i + 1) begin
             if((a << i) >> 32'h1F) begin
                 count = i;
+                break;
             end
         end
 
