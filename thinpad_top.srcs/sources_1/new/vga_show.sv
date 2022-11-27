@@ -20,7 +20,7 @@ always_comb begin
         // video_green = show[(vdata - 300) / 16 * 5 + (hdata - 360) / 16] * 7;
         // video_blue = show[(vdata - 300) / 16 * 5 + (hdata - 360) / 16] * 3;
         enb = 1;
-        addrb = (hdata - 0) / 2 + (vdata - 0) / 2 * 400  + 1;
+        addrb = (hdata - 300) / 2 + (vdata - 225) / 2 * 100  + 1;
         if(addrb == 7500) 
             addrb = 0;
         video_blue = doutb[1:0];
