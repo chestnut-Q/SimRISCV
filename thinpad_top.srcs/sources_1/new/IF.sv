@@ -15,7 +15,8 @@ module IF (
     input wire [31:0] id_PC_i,
     input wire [31:0] id_csr_branch_addr_i,
     input wire id_csr_branch_flag_i,
-    output wire [31:0] if_PC_o
+    output wire [31:0] if_PC_o,
+    output wire tlb_flush_o
 );
 
     logic branch;
@@ -23,6 +24,10 @@ module IF (
     logic [31:0] jump_addr;
     logic [31:0] branch_addr;
     logic rs1_equals_rs2;
+
+    assign tlb_flush_o = (!(branch || jump || id_csr_branch_flag_i))
+                         && (if_inst_i == `SFENCE)
+                         && (!stall_i);
 
     always_comb begin
         if (id_inst_type_i == `TYPE_B && 

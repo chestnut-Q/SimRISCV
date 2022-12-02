@@ -5,6 +5,7 @@
 // `define StartInstAddr 32'h80000340
 `define FENCEI 32'h0000100f
 `define FENCE 32'h0ff0000f
+`define SFENCE 32'h12000073
 
 `define WIDTH_INST_TYPE 2:0
 `define WIDTH_ALU_FUNCT 3:0

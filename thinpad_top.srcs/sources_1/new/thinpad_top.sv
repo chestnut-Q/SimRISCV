@@ -318,6 +318,7 @@ module thinpad_top (
   logic [31:0] if_PC;
   logic [31:0] if_inst;
   logic if_master_already;
+  logic if_tlb_flush;
 
   /* =========== IF module end =========== */
 
@@ -416,6 +417,7 @@ module thinpad_top (
   logic [31:0] mem_rf_wdata;
   logic [31:0] mem_csr_satp;
   logic [1:0] mem_csr_priv_level;
+  logic mem_tlb_flush;
 
   logic [4:0] wb_rd;
   logic [31:0] wb_rf_wdata;
@@ -464,7 +466,8 @@ module thinpad_top (
     .id_PC_i(id_PC),
     .id_csr_branch_addr_i(id_csr_branch_addr),
     .id_csr_branch_flag_i(id_csr_branch_flag),
-    .if_PC_o(if_PC)
+    .if_PC_o(if_PC),
+    .tlb_flush_o(if_tlb_flush)
   );
 
   IF_ID_controller IF_ID_controller(
@@ -699,7 +702,8 @@ module thinpad_top (
     .mem_wen_o(mem_wen), // 是（1）否（0）写 mem
     .mem_addr_o(mem_addr), 
     .mem_wdata_o(mem_wdata),
-    .sel_byte_o(mem_sel_byte)
+    .sel_byte_o(mem_sel_byte),
+    .mem_tlb_flush_o(mem_tlb_flush)
   );
 
   MEM_WB_controller MEM_WB_controller(
@@ -740,6 +744,7 @@ module thinpad_top (
     .mem_req_data_i(if_inst),
     .use_mmu_i(1'b1),
     .mem_ack_i(I_cache_already),
+    .tlb_flush_i(if_tlb_flush),
     .physical_addr_o(if_mmu_req_addr),
     .mmu_working_o(),
     .already_o(if_mmu_already)
@@ -754,6 +759,7 @@ module thinpad_top (
     .mem_req_data_i(mem_rdata),
     .use_mmu_i(mem_ren | mem_wen),
     .mem_ack_i(D_cache_already),
+    .tlb_flush_i(mem_tlb_flush),
     .physical_addr_o(mem_mmu_req_addr),
     .mmu_working_o(mem_mmu_working),
     .already_o(mem_mmu_already)
