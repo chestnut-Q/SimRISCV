@@ -23,18 +23,37 @@ module IF (
     logic [31:0] jump_addr;
     logic [31:0] branch_addr;
     logic rs1_equals_rs2;
-    assign rs1_equals_rs2 = (id_rf_rdata1_i == id_rf_rdata2_i);
-    assign branch = ((id_inst_type_i == `TYPE_B && ((id_inst_i[14:12] == `FUNCT3_BEQ && rs1_equals_rs2) || (id_inst_i[14:12] == `FUNCT3_BNE && !rs1_equals_rs2))) === 1'b1);
-    assign jump = ((!branch && (if_inst_i[6:0] == `OP_JAL || id_inst_i[6:0] == `OP_JALR)) === 1'b1);
-    assign jump_addr = id_inst_i[6:0] == `OP_JALR ? (id_rf_rdata1_i + id_imm_i) & (-2) : if_PC_o + {{19{if_inst_i[31]}}, if_inst_i[31], if_inst_i[19:12], if_inst_i[20], if_inst_i[30:21], 1'b0}; 
-    assign branch_addr = id_PC_i + id_imm_i;
+
+    always_comb begin
+        if (id_inst_type_i == `TYPE_B && 
+            ((id_inst_i[14:12] == `FUNCT3_BEQ && id_rf_rdata1_i == id_rf_rdata2_i) 
+            || (id_inst_i[14:12] == `FUNCT3_BNE && id_rf_rdata1_i != id_rf_rdata2_i))) begin
+                branch = 1'b1;
+            end else begin
+                branch = 1'b0;
+            end
+        
+        if (id_inst_i[6:0] == `OP_JAL || id_inst_i[6:0] == `OP_JALR) begin
+            jump = 1'b1;
+        end else begin
+            jump = 1'b0;
+        end
+
+        if (id_inst_i[6:0] == `OP_JALR) begin
+            jump_addr = (id_rf_rdata1_i + id_imm_i) & (-2);
+        end else begin
+            jump_addr = id_PC_i + {{19{id_inst_i[31]}}, id_inst_i[31], id_inst_i[19:12], id_inst_i[20], id_inst_i[30:21], 1'b0};
+        end
+
+        branch_addr = id_PC_i + id_imm_i;
+    end
 
     PC_mux PC_mux(
         .clk_i(clk_i),
         .rst_i(rst_i),
         .rst_addr_i(`StartInstAddr),
         .stall_i(stall_i),
-        .PC_src_i(branch), // BEQ, BNE
+        .branch_i(branch), // BEQ, BNE
         .branch_addr_i(jump ? jump_addr : branch_addr),
         .jump_i(jump), // J
         .csr_branch_addr_i(id_csr_branch_addr_i),

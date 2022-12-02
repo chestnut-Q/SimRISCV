@@ -15,6 +15,7 @@ module stall_controller (
     input wire [4:0] wb_rd_i,
     input wire wb_rf_wen_i,
     input wire branch_zero_i,
+    input wire id_csr_branch_flag_i,
     output reg [4:0] stall_o,
     output reg [4:0] flush_o,
     output reg [1:0] rdata1_bypass_o, // ID 阶段 rdata1 bypass mux 0: rdata1; 1: exe_rd; 2: mem_rd
@@ -65,9 +66,10 @@ module stall_controller (
             if (exe_is_load_inst && exe_rf_wen && exe_rd != 5'd0 && (exe_rd == id_rs1 || exe_rd == id_rs2)) begin
                 stall_o[1:0] = 2'b11;
                 flush_o[2] = 1'b1;
-            end else if ((id_inst_type_i == `TYPE_B && ((id_inst_i[14:12] == `FUNCT3_BEQ && branch_zero_i) || (id_inst_i[14:12] == `FUNCT3_BNE && !branch_zero_i))) ||
-                id_inst_i[6:0] == `OP_JALR) begin
-                flush_o[1] = 1'b1;
+            end else if ((id_inst_type_i == `TYPE_B && 
+                ((id_inst_i[14:12] == `FUNCT3_BEQ && branch_zero_i) || (id_inst_i[14:12] == `FUNCT3_BNE && !branch_zero_i))) ||
+                id_inst_type_i == `TYPE_J || id_csr_branch_flag_i) begin
+                    flush_o[1] = 1'b1;
                 end else if (id_inst_i[6:0] == `OP_CSR && id_inst_i[14:12] == `FUNCT3_EBREAK) begin
                     flush_o[1] = 1'b1;
                 end

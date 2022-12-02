@@ -79,6 +79,7 @@ module ID_EXE_controller (
 			imm_o <= '0;
 			rdata1_o <= '0;
 			rdata2_o <= '0;
+			PC_o <= `NOP;
 
 			exe_mtvec_we <= 1'b0;
 			exe_mtvec_o <= 32'b0;

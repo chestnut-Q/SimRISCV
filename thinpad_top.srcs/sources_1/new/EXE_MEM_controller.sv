@@ -12,6 +12,10 @@ module EXE_MEM_controller (
 	input wire [31:0] alu_result_i,
 	input wire [31:0] csr_result_i,
 	input wire [31:0] rdata2_i,
+    input wire [31:0] satp_i,
+	input wire [1:0] priv_level_i,
+	output reg [31:0] satp_o,
+	output reg [1:0] priv_level_o,
 	output reg [31:0] inst_o,
 	output reg [`WIDTH_INST_TYPE] inst_type_o,
 	output reg [31:0] alu_result_o,
@@ -48,6 +52,8 @@ module EXE_MEM_controller (
 			mem_addr_o <= 32'b0;
 			mem_wdata_o <= 32'b0;
 			sel_byte_o <= `EN_WORD;
+			satp_o <= 32'd0;
+			priv_level_o <= 2'b11;
 		end else if (stall_i) begin
 		end else if (flush_i) begin
 			inst_o <= `NOP;
@@ -64,6 +70,8 @@ module EXE_MEM_controller (
 			mem_addr_o <= alu_result_i;
 			mem_wdata_o <= mem_wdata;
 			sel_byte_o <= (inst_i[14:12] == `FUNCT3_BYTE);
+			satp_o <= satp_i;
+			priv_level_o <= priv_level_i;
 		end
 	end
 

@@ -414,6 +414,8 @@ module thinpad_top (
   logic [31:0] mem_rdata;
   logic mem_master_already;
   logic [31:0] mem_rf_wdata;
+  logic [31:0] mem_csr_satp;
+  logic [1:0] mem_csr_priv_level;
 
   logic [4:0] wb_rd;
   logic [31:0] wb_rf_wdata;
@@ -427,10 +429,12 @@ module thinpad_top (
   logic [1:0] rdata2_bypass;
   logic I_cache_already;
   logic D_cache_already;
+  logic if_mmu_already;
+  logic mem_mmu_already;
 
   stall_controller stall_controller (
-    .if_master_already_i(I_cache_already),
-    .mem_master_already_i(D_cache_already),
+    .if_master_already_i(if_mmu_already),
+    .mem_master_already_i(mem_mmu_already),
     .id_inst_i(id_inst),
     .id_inst_type_i(id_inst_type),
     .exe_inst_i(exe_inst),
@@ -440,6 +444,7 @@ module thinpad_top (
     .wb_rd_i(wb_rd),
     .wb_rf_wen_i(wb_rf_wen),
     .branch_zero_i(id_rf_rdata1 === id_rf_rdata2),
+    .id_csr_branch_flag_i(id_csr_branch_flag),
     .stall_o(stall),
     .flush_o(flush),
     .rdata1_bypass_o(rdata1_bypass),
@@ -682,6 +687,10 @@ module thinpad_top (
     .alu_result_i(exe_alu_result),
     .csr_result_i(exe_csr_result),
     .rdata2_i(exe_rdata2),
+    .satp_i(exe_satp_i),
+    .priv_level_i(exe_priv_level_i),
+    .satp_o(mem_csr_satp),
+    .priv_level_o(mem_csr_priv_level),
     .inst_o(mem_inst),
     .inst_type_o(mem_inst_type),
     .alu_result_o(mem_alu_result),
@@ -709,7 +718,6 @@ module thinpad_top (
     .rf_waddr_o(wb_rd)
   );
 
-
   logic [31:0] if_mem_req_addr;
   logic [31:0] if_mem_req_data;
   logic if_mem_req_valid;
@@ -719,6 +727,37 @@ module thinpad_top (
   logic [31:0] mem_mem_req_wdata;
   logic [31:0] mem_mem_req_rdata;
   logic mem_mem_req_sel_byte;
+  logic [31:0] if_mmu_req_addr;
+  logic [31:0] mem_mmu_req_addr;
+  logic mem_mmu_working;
+
+  MMU I_MMU(
+    .clk_i(sys_clk),
+    .rst_i(sys_rst),
+    .virtual_addr_i(if_PC),
+    .satp_i(csr_satp_o),
+    .priv_level_i(csr_priv_level_o),
+    .mem_req_data_i(if_inst),
+    .use_mmu_i(1'b1),
+    .mem_ack_i(I_cache_already),
+    .physical_addr_o(if_mmu_req_addr),
+    .mmu_working_o(),
+    .already_o(if_mmu_already)
+  );
+
+  MMU D_MMU(
+    .clk_i(sys_clk),
+    .rst_i(sys_rst),
+    .virtual_addr_i(mem_alu_result),
+    .satp_i(mem_csr_satp),
+    .priv_level_i(mem_csr_priv_level),
+    .mem_req_data_i(mem_rdata),
+    .use_mmu_i(mem_ren | mem_wen),
+    .mem_ack_i(D_cache_already),
+    .physical_addr_o(mem_mmu_req_addr),
+    .mmu_working_o(mem_mmu_working),
+    .already_o(mem_mmu_already)
+  );
 
   I_cache #(
     .CACHE_CAPACITY(32)
@@ -731,7 +770,7 @@ module thinpad_top (
     .mem_req_data_i(if_mem_req_data),
     .mem_req_ready_i(if_master_already),
     //to CPU
-    .cpu_req_addr_i(if_PC),
+    .cpu_req_addr_i(if_mmu_req_addr),
     .cpu_req_valid_i(1'b1),
     .cpu_req_data_o(if_inst),
     .already_o(I_cache_already)
@@ -753,11 +792,11 @@ module thinpad_top (
     .mem_req_ready_i(mem_master_already),
     .mem_sel_byte_o(mem_mem_req_sel_byte),
     //to CPU
-    .cpu_req_addr_i(mem_alu_result),
-    .cpu_req_ren_i(mem_ren),
-    .cpu_req_wen_i(mem_wen),
+    .cpu_req_addr_i(mem_mmu_req_addr),
+    .cpu_req_ren_i(mem_mmu_working ? 1'b1 : mem_ren),
+    .cpu_req_wen_i(mem_mmu_working ? 1'b0 : mem_wen),
     .cpu_req_wdata_i(mem_wdata),
-    .cpu_sel_byte_i(mem_sel_byte),
+    .cpu_sel_byte_i(mem_mmu_working ? `EN_WORD : mem_sel_byte),
     .cpu_req_data_o(mem_rdata),
     .already_o(D_cache_already)
 );
