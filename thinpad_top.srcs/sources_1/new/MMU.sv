@@ -16,8 +16,8 @@ module MMU(
     input wire tlb_flush_i,
     output wire [31:0] physical_addr_o,
     output reg mmu_working_o,
-    output wire already_o,
-    output wire [1:0] page_fault_o
+    output reg already_o,
+    output reg [1:0] page_fault_o
 );
 
 	typedef enum logic [1:0] {
