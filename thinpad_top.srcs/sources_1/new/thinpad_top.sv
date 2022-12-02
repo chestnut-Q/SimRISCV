@@ -433,6 +433,8 @@ module thinpad_top (
   logic D_cache_already;
   logic if_mmu_already;
   logic mem_mmu_already;
+  logic [1:0] I_mmu_page_fault;
+  logic [1:0] D_mmu_page_fault;
 
   stall_controller stall_controller (
     .if_master_already_i(if_mmu_already),
@@ -742,12 +744,15 @@ module thinpad_top (
     .satp_i(csr_satp_o),
     .priv_level_i(csr_priv_level_o),
     .mem_req_data_i(if_inst),
+    .ren_i(1'b1),
+    .wen_i(1'b0),
     .use_mmu_i(1'b1),
     .mem_ack_i(I_cache_already),
     .tlb_flush_i(if_tlb_flush),
     .physical_addr_o(if_mmu_req_addr),
     .mmu_working_o(),
-    .already_o(if_mmu_already)
+    .already_o(if_mmu_already),
+    .page_fault_o(I_mmu_page_fault)
   );
 
   MMU D_MMU(
@@ -757,12 +762,15 @@ module thinpad_top (
     .satp_i(mem_csr_satp),
     .priv_level_i(mem_csr_priv_level),
     .mem_req_data_i(mem_rdata),
+    .ren_i(mem_ren),
+    .wen_i(mem_wen),
     .use_mmu_i(mem_ren | mem_wen),
     .mem_ack_i(D_cache_already),
     .tlb_flush_i(mem_tlb_flush),
     .physical_addr_o(mem_mmu_req_addr),
     .mmu_working_o(mem_mmu_working),
-    .already_o(mem_mmu_already)
+    .already_o(mem_mmu_already),
+    .page_fault_o(D_mmu_page_fault)
   );
 
   I_cache #(

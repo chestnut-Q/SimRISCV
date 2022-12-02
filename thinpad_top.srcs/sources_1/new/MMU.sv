@@ -1,4 +1,5 @@
 `default_nettype none
+`include "defines.vh"
 
 module MMU(
     input wire clk_i,
@@ -8,12 +9,15 @@ module MMU(
     input wire [31:0] satp_i,
     input wire [1:0] priv_level_i,
     input wire [31:0] mem_req_data_i,
+    input wire ren_i,
+    input wire wen_i,
     input wire use_mmu_i,
     input wire mem_ack_i,
     input wire tlb_flush_i,
     output wire [31:0] physical_addr_o,
     output reg mmu_working_o,
-    output wire already_o
+    output wire already_o,
+    output wire [1:0] page_fault_o
 );
 
 	typedef enum logic [1:0] {
@@ -31,6 +35,48 @@ module MMU(
     logic [19:0] tlb_virtual;
     logic [19:0] tlb_physical;
     logic tlb_hit;
+
+    localparam V=0, R=1, W=2, X=3;
+    always_comb begin
+        page_fault_o = 2'b00;
+
+        if (ren_i) begin
+            if (state == LEVEL1 && mem_ack_i) begin
+                if (mem_req_data_i[V] == 1'b0) begin
+                    page_fault_o = `PAGE_FAULT_REN;
+                end else if (mem_req_data_i[3:1] != 3'b000) begin
+                    if (mem_req_data_i[R] == 1'b0) begin
+                        page_fault_o = `PAGE_FAULT_REN;
+                    end
+                end
+            end
+            if (state == LEVEL2 && mem_ack_i) begin
+                if (mem_req_data_i[V] == 1'b0 || mem_req_data_i[3:1] == 3'b000) begin
+                    page_fault_o = `PAGE_FAULT_REN;
+                end else if (mem_req_data_i[R] == 1'b0) begin
+                    page_fault_o = `PAGE_FAULT_REN;
+                end
+            end
+        end else if (wen_i) begin
+            if (state == LEVEL1 && mem_ack_i) begin
+                if (mem_req_data_i[V] == 1'b0) begin
+                    page_fault_o = `PAGE_FAULT_WEN;
+                end else if (mem_req_data_i[3:1] != 3'b000) begin
+                    if (mem_req_data_i[W] == 1'b0) begin
+                        page_fault_o = `PAGE_FAULT_WEN;
+                    end
+                end
+            end
+            if (state == LEVEL2 && mem_ack_i) begin
+                if (mem_req_data_i[V] == 1'b0 || mem_req_data_i[3:1] == 3'b000) begin
+                    page_fault_o = `PAGE_FAULT_WEN;
+                end else if (mem_req_data_i[W] == 1'b0) begin
+                    page_fault_o = `PAGE_FAULT_WEN;
+                end
+            end
+        end
+
+    end
 
     assign translation = (priv_level_i == 2'b00) && (satp_i[31] == 1'b1);
     assign use_mmu = use_mmu_i & translation;

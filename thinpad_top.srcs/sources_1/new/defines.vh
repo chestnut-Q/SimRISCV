@@ -17,6 +17,8 @@
 `define EN_NoBypass 2'd0
 `define EN_EXEBypass 2'd1
 `define EN_MEMBypass 2'd2
+`define PAGE_FAULT_REN 2'd1
+`define PAGE_FAULT_WEN 2'd2
 
 // Instruction Number
 `define OP_RTYPE 7'b0110011
