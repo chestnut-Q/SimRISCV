@@ -75,13 +75,21 @@ module MMU(
                 end
             end
         end
+    end
 
+    always_comb begin
+        already_o = 1'b0;
+        if (page_fault_o != 2'b00)
+            already_o = 1'b1;
+        if (use_mmu && mem_ack_i && (tlb_hit || state == PHYSICAL))
+            already_o = 1'b1;
+        if (!use_mmu && mem_ack_i)
+            already_o = 1'b1;
     end
 
     assign translation = (priv_level_i == 2'b00) && (satp_i[31] == 1'b1);
     assign use_mmu = use_mmu_i & translation;
     assign tlb_hit = tlb_valid && tlb_virtual == virtual_addr_i[31:12];
-    assign already_o = ((!use_mmu && mem_ack_i) || (use_mmu && mem_ack_i && (tlb_hit || state == PHYSICAL)));
     assign physical_addr_o = use_mmu ? (tlb_hit ? {tlb_physical, virtual_addr_i[11:0]} : physical_addr_reg) : virtual_addr_i;
     assign mmu_working_o = (use_mmu && (state != PHYSICAL && !tlb_hit));
 
