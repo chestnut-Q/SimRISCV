@@ -22,6 +22,8 @@ module ID (
     output reg [31:0] imm_o,
     output reg [31:0] rf_rdata1_o,
     output reg [31:0] rf_rdata2_o,
+    input reg [1:0] I_mmu_page_fault_i,
+    input reg [1:0] D_mmu_page_fault_i,
     output reg [11:0] csr_addr_o,
     output reg [2:0] csr_funct3_o,
     output reg [31:0] csr_branch_addr_o,
@@ -61,15 +63,19 @@ module ID (
     logic [31:0] id_rf_rdata2;
     logic [6:0] exe_opcode;
     logic [4:0] exe_rd;
+    logic time_interrupt_reg;
+    logic page_fault_reg;
 
     assign exe_opcode = exe_inst_i[6:0];
     assign exe_rd = exe_inst_i[11:7];
+    assign time_interrupt_reg = ((mstatus_i[3] | ~priv_level_i[0]) & mip_i[7] & mie_i[7]);
+    assign page_fault_reg = (I_mmu_page_fault_i == 2'b01 || I_mmu_page_fault_i == 2'b10 || D_mmu_page_fault_i == 2'b01 || D_mmu_page_fault_i == 2'b10);
 
     inst_decoder inst_decoder(
         .inst_i(inst_i),
         .rs1_o(rs1),
         .rs2_o(rs2),
-        .alu_src_o(alu_src_o), // alu 的第 2 个输入是 rdata_2（0）还是 imm（1）
+        .alu_src_o(alu_src_o),
         .alu_funct_o(alu_funct_o),
         .inst_type_o(inst_type_o),
         .imm_o(imm_o)
@@ -136,18 +142,29 @@ module ID (
             priv_level_o = priv_level_i;
             csr_branch_addr_o = 32'b0;
             csr_branch_flag_o = 1'b0;
-            if ((mstatus_i[3] | ~priv_level_i[0]) & mip_i[7] & mie_i[7]) 
-            // 当 mip.MTIP, mie.MTIE 同时为 1，且当前特权态下全局中断启用时，CPU 即触发时钟中断。
+            if (time_interrupt_reg || page_fault_reg)
             begin
                 alu_opcode_o = `OP_CSR;
                 csr_funct3_o = `FUNCT3_EBREAK;
-                csr_addr_o = `TIMER;
                 priv_level_we = 1'b1;
                 mstatus_we = 1'b1;
                 mepc_we = 1'b1;
                 mcause_we = 1'b1;
                 csr_branch_flag_o = 1'b1;
                 csr_branch_addr_o = mtvec_i;
+                if (page_fault_reg) begin // page fault
+                    if (I_mmu_page_fault_i == 2'b01 || I_mmu_page_fault_i == 2'b10) begin
+                        csr_addr_o = `PAGE_FAULT_I; // instruction page fault
+                    end else begin
+                        if (D_mmu_page_fault_i == 2'b01) begin
+                            csr_addr_o = `PAGE_FAULT_L; // load page fault
+                        end else begin
+                            csr_addr_o = `PAGE_FAULT_S; // save page fault
+                        end
+                    end
+                end else begin // time intterrupt
+                    csr_addr_o = `TIMER;
+                end
             end else begin
                 alu_opcode_o = inst_i[6:0];
                 csr_funct3_o = inst_i[14:12];

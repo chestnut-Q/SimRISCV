@@ -503,6 +503,8 @@ module thinpad_top (
     .imm_o(id_imm),
     .rf_rdata1_o(id_rf_rdata1),
     .rf_rdata2_o(id_rf_rdata2),
+    .I_mmu_page_fault_i(I_mmu_page_fault),
+    .D_mmu_page_fault_i(D_mmu_page_fault),
 
     .csr_addr_o(id_csr_addr),
     .csr_funct3_o(id_csr_funct3),

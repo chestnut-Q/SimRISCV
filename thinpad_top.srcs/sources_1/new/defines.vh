@@ -100,6 +100,9 @@
 `define EBREAK 12'h001
 `define MRET 12'h302
 `define TIMER 12'hfff
+`define PAGE_FAULT_I 12'hffe
+`define PAGE_FAULT_L 12'hffd
+`define PAGE_FAULT_S 12'hffc
 
 `define MTIME_LOWER_ADDR 32'h0200BFF8
 `define MTIME_UPPER_ADDR 32'h0200BFFC

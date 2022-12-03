@@ -118,6 +118,18 @@ module EXE (
                   priv_level_o = 2'b11;
                   mstatus_o = {mstatus_i[31:13], priv_level_i, mstatus_i[10:8], mstatus_i[3], mstatus_i[6:4], 1'b0, mstatus_i[2:0]};
                 end
+                `PAGE_FAULT_L: begin
+                  mepc_o = PC_i;
+                  mcause_o = {1'b1, 27'b0, 4'b1101}; 
+                  priv_level_o = 2'b11;
+                  mstatus_o = {mstatus_i[31:13], priv_level_i, mstatus_i[10:8], mstatus_i[3], mstatus_i[6:4], 1'b0, mstatus_i[2:0]};
+                end
+                `PAGE_FAULT_S: begin
+                  mepc_o = PC_i;
+                  mcause_o = {1'b1, 27'b0, 4'b1111}; 
+                  priv_level_o = 2'b11;
+                  mstatus_o = {mstatus_i[31:13], priv_level_i, mstatus_i[10:8], mstatus_i[3], mstatus_i[6:4], 1'b0, mstatus_i[2:0]};
+                end
                 `MRET: begin
                   priv_level_o = mstatus_i[12:11];
                   mstatus_o = {mstatus_i[31:13], 2'b11, mstatus_i[10:8], mstatus_i[3], mstatus_i[6:4], mstatus_i[7], mstatus_i[2:0]};
