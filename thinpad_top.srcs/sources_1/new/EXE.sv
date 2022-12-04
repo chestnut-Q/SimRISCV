@@ -75,6 +75,8 @@ module EXE (
     .y(alu_result)
   );
 
+  // assign bht_actual_o = (inst_i[6:0] == `OP_BTYPE ? ((inst_i[14:12] == `FUNCT3_BEQ) ? alu_result == 32'b0 : alu_result != 32'b0) : 1'b0);
+
   always_comb begin
     if (rst_i) begin
       mtvec_o = 32'b0;

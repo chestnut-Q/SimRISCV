@@ -319,6 +319,7 @@ module thinpad_top (
   logic [31:0] if_inst;
   logic if_master_already;
   logic if_tlb_flush;
+  logic bht_past;
 
   /* =========== IF module end =========== */
 
@@ -447,6 +448,8 @@ module thinpad_top (
     .mem_inst_type_i(mem_inst_type),
     .wb_rd_i(wb_rd),
     .wb_rf_wen_i(wb_rf_wen),
+    .bht_past_i(bht_past),
+    .bht_actual_i(bht_actual),
     .branch_zero_i(id_rf_rdata1 === id_rf_rdata2),
     .id_csr_branch_flag_i(id_csr_branch_flag),
     .stall_o(stall),
@@ -455,6 +458,26 @@ module thinpad_top (
     .rdata2_bypass_o(rdata2_bypass)
   );
 
+  reg [1:0] bht_state;
+  reg [31:0] last_branch_dst;
+  reg[31:0] id_bht_addr;
+
+  reg [1:0] bht_state;
+  reg bht_actual;
+
+  BHT bht(
+    .clk_i(sys_clk),
+    .rst_i(sys_rst),
+    .stall_i(stall[2]),
+    .bht_past_i(bht_past),
+    .bht_actual_i(bht_actual),
+    .exe_inst_i(exe_inst),
+    .pred_state_o(bht_state)
+  );
+
+  reg bht_branch_flag;
+  reg [31:0] bht_branch_addr;
+
   IF IF (
     .clk_i(sys_clk),
     .rst_i(sys_rst),
@@ -462,14 +485,21 @@ module thinpad_top (
     .id_inst_type_i(id_inst_type),
     .id_inst_i(id_inst),
     .if_inst_i(if_inst),
+    .exe_inst_i(exe_inst),
+    .exe_alu_result_i(exe_alu_result),
     .id_rf_rdata1_i(id_rf_rdata1),
     .id_rf_rdata2_i(id_rf_rdata2),
     .id_imm_i(id_imm),
     .id_PC_i(id_PC),
     .id_csr_branch_addr_i(id_csr_branch_addr),
     .id_csr_branch_flag_i(id_csr_branch_flag),
+    .bht_state_i(bht_state),
+    .bht_branch_flag_i(bht_branch_flag),
+    .bht_branch_addr_i(bht_branch_addr),
+    .bht_actual_o(bht_actual),
     .if_PC_o(if_PC),
-    .tlb_flush_o(if_tlb_flush)
+    .tlb_flush_o(if_tlb_flush),
+    .bht_past_o(bht_past)
   );
 
   IF_ID_controller IF_ID_controller(
@@ -479,6 +509,8 @@ module thinpad_top (
     .flush_i(flush[1]),
     .PC_i(if_PC),
     .inst_i(if_inst),
+    .bht_branch_flag_o(bht_branch_flag),
+    .bht_branch_addr_o(bht_branch_addr),
     .PC_o(id_PC),
     .inst_o(id_inst)
   );

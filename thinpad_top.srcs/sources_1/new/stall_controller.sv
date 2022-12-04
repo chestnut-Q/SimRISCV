@@ -14,6 +14,8 @@ module stall_controller (
     input wire [`WIDTH_INST_TYPE] mem_inst_type_i,
     input wire [4:0] wb_rd_i,
     input wire wb_rf_wen_i,
+    input wire bht_past_i,
+    input wire bht_actual_i,
     input wire branch_zero_i,
     input wire id_csr_branch_flag_i,
     output reg [4:0] stall_o,
@@ -63,6 +65,10 @@ module stall_controller (
         if (!if_master_already_i || !mem_master_already_i) begin
             stall_o = 5'b11111;
         end else begin
+            if ((bht_past_i == 1'b1 && id_inst_i[6:0] == `OP_BTYPE && bht_actual_i == 1'b0) || 
+            (bht_past_i == 1'b0 && id_inst_i[6:0] == `OP_BTYPE && bht_actual_i == 1'b1)) begin
+                flush_o[1] = 1'b1; // 预测跳转但是实际没跳转，需要清空ID阶段正在运行的指令
+            end
             if (exe_is_load_inst && exe_rf_wen && exe_rd != 5'd0 && (exe_rd == id_rs1 || exe_rd == id_rs2)) begin
                 stall_o[1:0] = 2'b11;
                 flush_o[2] = 1'b1;

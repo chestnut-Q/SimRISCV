@@ -49,6 +49,9 @@ module tb;
   parameter BASE_RAM_INIT_FILE = "C:\\rv-2022\\supervisor-rv\\kernel\\kernel.bin"; // BaseRAM 初始化文件，请修改为实际的绝对路径
   parameter EXT_RAM_INIT_FILE = "C:\\cod\\cod22-grp12\\testcases\\kernel.bin";  // ExtRAM 初始化文件，请修改为实际的绝对路径
   parameter FLASH_INIT_FILE = "C:\\cod\\cod22-grp12\\testcases\\kernel.bin";  // Flash 初始化文件，请修改为实际的绝对路径
+  // parameter BASE_RAM_INIT_FILE = "C:\\rv-2022\\asmcode\\complex.bin"; // BaseRAM 初始化文件，请修改为实际的绝对路径
+  // parameter EXT_RAM_INIT_FILE = "C:\\rv-2022\\asmcode\\complex.bin";  // ExtRAM 初始化文件，请修改为实际的绝对路径
+  // parameter FLASH_INIT_FILE = "C:\\rv-2022\\asmcode\\complex.bin";  // Flash 初始化文件，请修改为实际的绝对路径
 
   initial begin
     // 在这里可以自定义测试输入序列，例如：

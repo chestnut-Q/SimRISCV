@@ -1,8 +1,6 @@
 // Constants
 `define NOP 32'h00000013
-// TODO recover the starting address
 `define StartInstAddr 32'h80000000
-// `define StartInstAddr 32'h80000340
 `define FENCEI 32'h0000100f
 `define FENCE 32'h0ff0000f
 `define SFENCE 32'h12000073

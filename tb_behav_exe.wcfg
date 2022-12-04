@@ -11,13 +11,13 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="388734270fs"></ZoomStartTime>
-      <ZoomEndTime time="396029271fs"></ZoomEndTime>
-      <Cursor1Time time="976710000fs"></Cursor1Time>
+      <ZoomStartTime time="0fs"></ZoomStartTime>
+      <ZoomEndTime time="14690000001fs"></ZoomEndTime>
+      <Cursor1Time time="5174082473fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="228"></NameColumnWidth>
-      <ValueColumnWidth column_width="118"></ValueColumnWidth>
+      <ValueColumnWidth column_width="108"></ValueColumnWidth>
    </column_width_setting>
    <WVObjectSize size="17" />
    <wvobject fp_name="/tb/clk_50M" type="logic">
@@ -28,17 +28,13 @@
       <obj_property name="ElementShortName">clk_11M0592</obj_property>
       <obj_property name="ObjectShortName">clk_11M0592</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb/dut/u_mtimer/mtime_reg" type="array">
-      <obj_property name="ElementShortName">mtime_reg[63:0]</obj_property>
-      <obj_property name="ObjectShortName">mtime_reg[63:0]</obj_property>
+   <wvobject fp_name="/tb/dut/stall" type="array">
+      <obj_property name="ElementShortName">stall[4:0]</obj_property>
+      <obj_property name="ObjectShortName">stall[4:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb/dut/u_mtimer/mtimecmp_reg" type="array">
-      <obj_property name="ElementShortName">mtimecmp_reg[63:0]</obj_property>
-      <obj_property name="ObjectShortName">mtimecmp_reg[63:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/u_mtimer/interrupt_o" type="logic">
-      <obj_property name="ElementShortName">interrupt_o</obj_property>
-      <obj_property name="ObjectShortName">interrupt_o</obj_property>
+   <wvobject fp_name="/tb/dut/flush" type="array">
+      <obj_property name="ElementShortName">flush[4:0]</obj_property>
+      <obj_property name="ObjectShortName">flush[4:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/tb/dut/if_PC" type="array">
       <obj_property name="ElementShortName">if_PC[31:0]</obj_property>
@@ -55,38 +51,41 @@
    <wvobject fp_name="/tb/dut/id_inst" type="array">
       <obj_property name="ElementShortName">id_inst[31:0]</obj_property>
       <obj_property name="ObjectShortName">id_inst[31:0]</obj_property>
-      <obj_property name="WaveformStyle">STYLE_DIGITAL</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb/dut/IF/PC_mux/csr_branch_addr_i" type="array">
-      <obj_property name="ElementShortName">csr_branch_addr_i[31:0]</obj_property>
-      <obj_property name="ObjectShortName">csr_branch_addr_i[31:0]</obj_property>
+   <wvobject fp_name="/tb/dut/exe_PC" type="array">
+      <obj_property name="ElementShortName">exe_PC[31:0]</obj_property>
+      <obj_property name="ObjectShortName">exe_PC[31:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb/dut/u_csr/mscratch_reg" type="array">
-      <obj_property name="ElementShortName">mscratch_reg[31:0]</obj_property>
-      <obj_property name="ObjectShortName">mscratch_reg[31:0]</obj_property>
+   <wvobject fp_name="/tb/dut/exe_inst" type="array">
+      <obj_property name="ElementShortName">exe_inst[31:0]</obj_property>
+      <obj_property name="ObjectShortName">exe_inst[31:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb/dut/u_csr/mtvec_reg" type="array">
-      <obj_property name="ElementShortName">mtvec_reg[31:0]</obj_property>
-      <obj_property name="ObjectShortName">mtvec_reg[31:0]</obj_property>
+   <wvobject fp_name="/tb/dut/IF/jump" type="logic">
+      <obj_property name="ElementShortName">jump</obj_property>
+      <obj_property name="ObjectShortName">jump</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb/dut/u_csr/mepc_reg" type="array">
-      <obj_property name="ElementShortName">mepc_reg[31:0]</obj_property>
-      <obj_property name="ObjectShortName">mepc_reg[31:0]</obj_property>
+   <wvobject fp_name="/tb/dut/IF/branch" type="logic">
+      <obj_property name="ElementShortName">branch</obj_property>
+      <obj_property name="ObjectShortName">branch</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb/dut/u_csr/mcause_reg" type="array">
-      <obj_property name="ElementShortName">mcause_reg[31:0]</obj_property>
-      <obj_property name="ObjectShortName">mcause_reg[31:0]</obj_property>
+   <wvobject fp_name="/tb/dut/bht_state" type="array">
+      <obj_property name="ElementShortName">bht_state[1:0]</obj_property>
+      <obj_property name="ObjectShortName">bht_state[1:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb/dut/u_csr/mie_reg" type="array">
-      <obj_property name="ElementShortName">mie_reg[31:0]</obj_property>
-      <obj_property name="ObjectShortName">mie_reg[31:0]</obj_property>
+   <wvobject fp_name="/tb/dut/IF/bht_branch_flag_i" type="logic">
+      <obj_property name="ElementShortName">bht_branch_flag_i</obj_property>
+      <obj_property name="ObjectShortName">bht_branch_flag_i</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb/dut/u_csr/mip_reg" type="array">
-      <obj_property name="ElementShortName">mip_reg[31:0]</obj_property>
-      <obj_property name="ObjectShortName">mip_reg[31:0]</obj_property>
+   <wvobject fp_name="/tb/dut/IF/bht_branch_addr_i" type="array">
+      <obj_property name="ElementShortName">bht_branch_addr_i[31:0]</obj_property>
+      <obj_property name="ObjectShortName">bht_branch_addr_i[31:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb/dut/u_csr/priv_reg" type="array">
-      <obj_property name="ElementShortName">priv_reg[1:0]</obj_property>
-      <obj_property name="ObjectShortName">priv_reg[1:0]</obj_property>
+   <wvobject fp_name="/tb/dut/IF/bht_actual_o" type="logic">
+      <obj_property name="ElementShortName">bht_actual_o</obj_property>
+      <obj_property name="ObjectShortName">bht_actual_o</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/IF/bht_past_o" type="logic">
+      <obj_property name="ElementShortName">bht_past_o</obj_property>
+      <obj_property name="ObjectShortName">bht_past_o</obj_property>
    </wvobject>
 </wave_config>
