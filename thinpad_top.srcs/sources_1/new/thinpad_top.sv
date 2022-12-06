@@ -476,6 +476,8 @@ module thinpad_top (
   logic mem_mmu_already;
   logic [1:0] I_mmu_page_fault;
   logic [1:0] D_mmu_page_fault;
+  logic bht_pred_valid;
+  logic bht_pred_succ;
 
   stall_controller stall_controller (
     .if_master_already_i(if_mmu_already),
@@ -495,7 +497,10 @@ module thinpad_top (
     .stall_o(stall),
     .flush_o(flush),
     .rdata1_bypass_o(rdata1_bypass),
-    .rdata2_bypass_o(rdata2_bypass)
+    .rdata2_bypass_o(rdata2_bypass),
+    .page_fault_i(page_fault_reg),
+    .pred_valid_i(bht_pred_valid),
+    .pred_succ_i(bht_pred_succ)
   );
 
   reg [1:0] bht_state;
@@ -511,8 +516,10 @@ module thinpad_top (
     .stall_i(stall[2]),
     .bht_past_i(bht_past),
     .bht_actual_i(bht_actual),
-    .exe_inst_i(exe_inst),
-    .pred_state_o(bht_state)
+    .id_inst_i(id_inst),
+    .pred_state_o(bht_state),
+    .pred_valid_o(bht_pred_valid),
+    .pred_succ_o(bht_pred_succ)
   );
 
   reg bht_branch_flag;
@@ -554,6 +561,8 @@ module thinpad_top (
     .PC_o(id_PC),
     .inst_o(id_inst)
   );
+
+  reg page_fault_reg;
 
   ID ID (
     .clk_i(sys_clk),
@@ -617,7 +626,9 @@ module thinpad_top (
     
     .priv_level_i(csr_priv_level_o),
     .priv_level_we(id_priv_level_we),
-    .priv_level_o(id_priv_level_o)
+    .priv_level_o(id_priv_level_o),
+
+    .page_fault_o(page_fault_reg)
   );
 
   ID_EXE_controller ID_EXE_controller(

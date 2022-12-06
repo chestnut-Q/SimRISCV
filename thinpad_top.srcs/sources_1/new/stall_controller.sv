@@ -21,7 +21,10 @@ module stall_controller (
     output reg [4:0] stall_o,
     output reg [4:0] flush_o,
     output reg [1:0] rdata1_bypass_o, // ID 阶段 rdata1 bypass mux 0: rdata1; 1: exe_rd; 2: mem_rd
-    output reg [1:0] rdata2_bypass_o // ID 阶段 rdata2 bypass mux 0: rdata2; 1: exe_rd; 2: mem_rd
+    output reg [1:0] rdata2_bypass_o, // ID 阶段 rdata2 bypass mux 0: rdata2; 1: exe_rd; 2: mem_rd
+    input wire page_fault_i,
+    input wire pred_valid_i,
+    input wire pred_succ_i
 );
 
     logic [4:0] id_rs1;
@@ -62,12 +65,15 @@ module stall_controller (
     always_comb begin
         stall_o = 5'b00000;
         flush_o = 5'b00000;
-        if (!if_master_already_i || !mem_master_already_i) begin
+        if (page_fault_i) begin
+            stall_o = 5'b00000;
+        end else if (!if_master_already_i || !mem_master_already_i) begin
             stall_o = 5'b11111;
         end else begin
-            if ((bht_past_i == 1'b1 && id_inst_i[6:0] == `OP_BTYPE && bht_actual_i == 1'b0) || 
-            (bht_past_i == 1'b0 && id_inst_i[6:0] == `OP_BTYPE && bht_actual_i == 1'b1)) begin
-                flush_o[1] = 1'b1; // 预测跳转但是实际没跳转，需要清空ID阶段正在运行的指令
+            if (pred_valid_i == 1'b1 && pred_succ_i == 1'b0) begin
+                flush_o[1] = 1'b1;
+            end else begin
+                flush_o[0] = 1'b0;
             end
             if (exe_is_load_inst && exe_rf_wen && exe_rd != 5'd0 && (exe_rd == id_rs1 || exe_rd == id_rs2)) begin
                 stall_o[1:0] = 2'b11;
