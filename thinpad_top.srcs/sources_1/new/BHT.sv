@@ -4,7 +4,6 @@ module BHT (
     input wire clk_i,
     input wire rst_i,
     input wire stall_i,
-    input wire PC_src_i,
     input wire bht_past_i,
     input wire bht_actual_i,
     input wire [31:0] id_inst_i,
