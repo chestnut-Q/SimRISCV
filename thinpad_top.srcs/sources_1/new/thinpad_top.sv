@@ -207,20 +207,60 @@ module thinpad_top (
   //     .TxD_data (ext_uart_tx)      // 待发送的数据
   // );
 
-  // // 图像输出演示，分辨率 800x600@75Hz，像素时钟为 50MHz
-  // logic [11:0] hdata;
-  // assign video_red   = hdata < 266 ? 3'b111 : 0;  // 红色竖条
-  // assign video_green = hdata < 532 && hdata >= 266 ? 3'b111 : 0;  // 绿色竖条
-  // assign video_blue  = hdata >= 532 ? 2'b11 : 0;  // 蓝色竖条
-  // assign video_clk   = clk_50M;
-  // vga #(12, 800, 856, 976, 1040, 600, 637, 643, 666, 1, 1) vga800x600at75 (
-  //     .clk        (clk_50M),
-  //     .hdata      (hdata),        // 横坐标
-  //     .vdata      (),             // 纵坐标
-  //     .hsync      (video_hsync),
-  //     .vsync      (video_vsync),
-  //     .data_enable(video_de)
-  // );
+  // BlockRAM ???
+  logic [31:0] block_ram_data;  // blockRAM ????
+  logic [18:0] block_ram_addr;  // blockRAM ???
+  logic [3:0] block_ram_be_n;  // blockRAM ?????????????????????????????????? 0
+  logic block_ram_ce_n;  // blockRAM ?????????
+  logic block_ram_oe_n;  // blockRAM ???????????
+  logic block_ram_we_n;  // blockRAM ??????????
+
+  logic wea;
+  logic [18:0] addra;
+  logic [7:0] dina;
+
+  logic [18:0] addrb;
+  logic [7:0] doutb;
+  assign addra = block_ram_addr;
+  assign dina = block_ram_data[7:0];
+
+  blk_mem_gen blk (
+    .clka(clk_10M),    // input wire clka
+    .ena(1),      // input wire ena
+    .wea(!block_ram_we_n),      // input wire [0 : 0] wea
+    .addra(addra),  // input wire [18 : 0] addra
+    .dina(dina),    // input wire [7 : 0] dina
+    .clkb(clk_10M),    // input wire clkb
+    .enb(1),      // input wire enb
+    .addrb(addrb),  // input wire [18 : 0] addrb
+    .doutb(doutb)  // output wire [7 : 0] doutb
+  );
+
+  // 图像输出演示，分辨率 800x600@75Hz，像素时钟为 50MHz
+  logic [11:0] hdata;
+  logic [11:0] vdata;
+  logic enb;
+  
+  assign video_clk   = clk_50M;
+  vga #(12, 800, 856, 976, 1040, 600, 637, 643, 666, 1, 1) vga800x600at75 (
+      .clk        (clk_50M),
+      .hdata      (hdata),        // 横坐标
+      .vdata      (vdata),             // 纵坐标
+      .hsync      (video_hsync),
+      .vsync      (video_vsync),
+      .data_enable(video_de)
+  );
+
+  vga_show VGA_show(
+    .hdata(hdata),
+    .vdata(vdata),
+    .video_red(video_red),
+    .video_green(video_green),
+    .video_blue(video_blue),
+    .enb(enb),
+    .addrb(addrb),
+    .doutb(doutb)
+  );
   /* =========== Demo code end =========== */
 
   logic sys_clk;
@@ -949,6 +989,15 @@ module thinpad_top (
   logic wbs3_ack_i;
   logic wbs3_cyc_o;
 
+  logic [31:0] wbs4_adr_o;
+  logic [31:0] wbs4_dat_i;
+  logic [31:0] wbs4_dat_o;
+  logic wbs4_we_o;
+  logic [3:0] wbs4_sel_o;
+  logic wbs4_stb_o;
+  logic wbs4_ack_i;
+  logic wbs4_cyc_o;
+
   IF_master #(
     .ADDR_WIDTH(32),
     .DATA_WIDTH(32)
@@ -1045,7 +1094,7 @@ module thinpad_top (
   );
 
 
-  wb_mux_4 wb_mux_mem (
+  wb_mux_5 wb_mux_mem (
     .clk(sys_clk),
     .rst(sys_rst),
 
@@ -1123,7 +1172,23 @@ module thinpad_top (
     .wbs3_ack_i(wbs3_ack_i),
     .wbs3_err_i('0),
     .wbs3_rty_i('0),
-    .wbs3_cyc_o(wbs3_cyc_o)
+    .wbs3_cyc_o(wbs3_cyc_o),
+
+    // Slave interface 4 (to BlockRAM controller)
+    // Address range: 0x3000_0000 ~ 0x303F_FFFF
+    .wbs4_addr    (32'h3000_0000),
+    .wbs4_addr_msk(32'hFFC0_0000),
+
+    .wbs4_adr_o(wbs4_adr_o),
+    .wbs4_dat_i(wbs4_dat_i),
+    .wbs4_dat_o(wbs4_dat_o),
+    .wbs4_we_o (wbs4_we_o),
+    .wbs4_sel_o(wbs4_sel_o),
+    .wbs4_stb_o(wbs4_stb_o),
+    .wbs4_ack_i(wbs4_ack_i),
+    .wbs4_err_i('0),
+    .wbs4_rty_i('0),
+    .wbs4_cyc_o(wbs4_cyc_o)
   );
   /* =========== MUX end =========== */
 
@@ -1312,6 +1377,31 @@ module thinpad_top (
     .wb_dat_o(wbs3_dat_i),
     .wb_sel_i(wbs3_sel_o),
     .wb_we_i (wbs3_we_o)
+  );
+
+  sram_controller_block #(
+    .SRAM_ADDR_WIDTH(20),
+    .SRAM_DATA_WIDTH(32)
+  ) sram_controller_blk (
+    .clk_i(sys_clk),
+    .rst_i(sys_rst),
+
+    // Wishbone slave (to MUX)
+    .wb_cyc_i(wbs4_cyc_o),
+    .wb_stb_i(wbs4_stb_o),
+    .wb_ack_o(wbs4_ack_i),
+    .wb_adr_i(wbs4_adr_o),
+    .wb_dat_i(wbs4_dat_o),
+    .wb_dat_o(wbs4_dat_i),
+    .wb_sel_i(wbs4_sel_o),
+    .wb_we_i (wbs4_we_o),
+
+    // To SRAM chip
+    .sram_addr(block_ram_addr),
+    .sram_data(block_ram_data),
+    .sram_ce_n(block_ram_ce_n),
+    .sram_oe_n(block_ram_oe_n),
+    .sram_we_n(block_ram_we_n)
   );
 
   /* =========== Slaves end =========== */
