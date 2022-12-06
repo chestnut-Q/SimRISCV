@@ -21,8 +21,8 @@ typedef enum logic [1:0] {
 
 state_t pred_history_reg;
 
-assign pred_state_o = pred_history_reg;
-// assign pred_state_o = strongly_taken;
+// assign pred_state_o = pred_history_reg;
+assign pred_state_o = strongly_taken;
 
 reg pred_valid;
 reg pred_succ;
