@@ -11,15 +11,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="0fs"></ZoomStartTime>
-      <ZoomEndTime time="14690000001fs"></ZoomEndTime>
-      <Cursor1Time time="5174082473fs"></Cursor1Time>
+      <ZoomStartTime time="989118130fs"></ZoomStartTime>
+      <ZoomEndTime time="1001038131fs"></ZoomEndTime>
+      <Cursor1Time time="101316240fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="228"></NameColumnWidth>
       <ValueColumnWidth column_width="108"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="17" />
+   <WVObjectSize size="19" />
    <wvobject fp_name="/tb/clk_50M" type="logic">
       <obj_property name="ElementShortName">clk_50M</obj_property>
       <obj_property name="ObjectShortName">clk_50M</obj_property>
@@ -87,5 +87,13 @@
    <wvobject fp_name="/tb/dut/IF/bht_past_o" type="logic">
       <obj_property name="ElementShortName">bht_past_o</obj_property>
       <obj_property name="ObjectShortName">bht_past_o</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/bht/pred_succ" type="logic">
+      <obj_property name="ElementShortName">pred_succ</obj_property>
+      <obj_property name="ObjectShortName">pred_succ</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/bht/pred_valid" type="logic">
+      <obj_property name="ElementShortName">pred_valid</obj_property>
+      <obj_property name="ObjectShortName">pred_valid</obj_property>
    </wvobject>
 </wave_config>
