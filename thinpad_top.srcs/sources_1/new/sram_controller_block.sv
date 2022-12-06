@@ -24,7 +24,8 @@ module sram_controller_block #(
 
 	// sram interface
 	output reg [SRAM_ADDR_WIDTH-1:0] sram_addr,
-	inout wire [SRAM_DATA_WIDTH-1:0] sram_data,
+	// inout wire [SRAM_DATA_WIDTH-1:0] sram_data,
+	input wire [SRAM_DATA_WIDTH-1:0] sram_data,
 	output reg sram_ce_n,
 	output reg sram_oe_n,
 	output reg sram_we_n
