@@ -54,7 +54,8 @@ module ID (
     output reg [31:0] satp_o,
     input wire [1:0] priv_level_i,
     output reg priv_level_we,
-    output reg [1:0] priv_level_o
+    output reg [1:0] priv_level_o,
+    output wire page_fault_o
 );
 
     logic [4:0] rs1;
@@ -70,6 +71,7 @@ module ID (
     assign exe_rd = exe_inst_i[11:7];
     assign time_interrupt_reg = ((mstatus_i[3] | ~priv_level_i[0]) & mip_i[7] & mie_i[7]);
     assign page_fault_reg = (I_mmu_page_fault_i == 2'b01 || I_mmu_page_fault_i == 2'b10 || D_mmu_page_fault_i == 2'b01 || D_mmu_page_fault_i == 2'b10);
+    assign page_fault_o = page_fault_reg;
 
     inst_decoder inst_decoder(
         .inst_i(inst_i),

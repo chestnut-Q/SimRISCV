@@ -12,14 +12,14 @@
    </db_ref_list>
    <zoom_setting>
       <ZoomStartTime time="0fs"></ZoomStartTime>
-      <ZoomEndTime time="14690000001fs"></ZoomEndTime>
-      <Cursor1Time time="5174082473fs"></Cursor1Time>
+      <ZoomEndTime time="240400001fs"></ZoomEndTime>
+      <Cursor1Time time="87910000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="228"></NameColumnWidth>
-      <ValueColumnWidth column_width="108"></ValueColumnWidth>
+      <ValueColumnWidth column_width="98"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="17" />
+   <WVObjectSize size="26" />
    <wvobject fp_name="/tb/clk_50M" type="logic">
       <obj_property name="ElementShortName">clk_50M</obj_property>
       <obj_property name="ObjectShortName">clk_50M</obj_property>
@@ -31,6 +31,14 @@
    <wvobject fp_name="/tb/dut/stall" type="array">
       <obj_property name="ElementShortName">stall[4:0]</obj_property>
       <obj_property name="ObjectShortName">stall[4:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/stall_controller/pred_valid_i" type="logic">
+      <obj_property name="ElementShortName">pred_valid_i</obj_property>
+      <obj_property name="ObjectShortName">pred_valid_i</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/stall_controller/pred_succ_i" type="logic">
+      <obj_property name="ElementShortName">pred_succ_i</obj_property>
+      <obj_property name="ObjectShortName">pred_succ_i</obj_property>
    </wvobject>
    <wvobject fp_name="/tb/dut/flush" type="array">
       <obj_property name="ElementShortName">flush[4:0]</obj_property>
@@ -60,17 +68,53 @@
       <obj_property name="ElementShortName">exe_inst[31:0]</obj_property>
       <obj_property name="ObjectShortName">exe_inst[31:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb/dut/IF/jump" type="logic">
-      <obj_property name="ElementShortName">jump</obj_property>
-      <obj_property name="ObjectShortName">jump</obj_property>
+   <wvobject fp_name="/tb/dut/IF/PC_mux/branch_addr_i" type="array">
+      <obj_property name="ElementShortName">branch_addr_i[31:0]</obj_property>
+      <obj_property name="ObjectShortName">branch_addr_i[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/IF/id_rf_rdata1_i" type="array">
+      <obj_property name="ElementShortName">id_rf_rdata1_i[31:0]</obj_property>
+      <obj_property name="ObjectShortName">id_rf_rdata1_i[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/IF/id_rf_rdata2_i" type="array">
+      <obj_property name="ElementShortName">id_rf_rdata2_i[31:0]</obj_property>
+      <obj_property name="ObjectShortName">id_rf_rdata2_i[31:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/tb/dut/IF/branch" type="logic">
       <obj_property name="ElementShortName">branch</obj_property>
       <obj_property name="ObjectShortName">branch</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb/dut/bht_state" type="array">
-      <obj_property name="ElementShortName">bht_state[1:0]</obj_property>
-      <obj_property name="ObjectShortName">bht_state[1:0]</obj_property>
+   <wvobject fp_name="/tb/dut/IF/PC_mux/id_inst_type_i" type="array">
+      <obj_property name="ElementShortName">id_inst_type_i[6:0]</obj_property>
+      <obj_property name="ObjectShortName">id_inst_type_i[6:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/bht/bht_past_i" type="logic">
+      <obj_property name="ElementShortName">bht_past_i</obj_property>
+      <obj_property name="ObjectShortName">bht_past_i</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/bht/bht_actual_i" type="logic">
+      <obj_property name="ElementShortName">bht_actual_i</obj_property>
+      <obj_property name="ObjectShortName">bht_actual_i</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/IF/PC_mux/PC_past_reg" type="array">
+      <obj_property name="ElementShortName">PC_past_reg[31:0]</obj_property>
+      <obj_property name="ObjectShortName">PC_past_reg[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/bht/pred_valid" type="logic">
+      <obj_property name="ElementShortName">pred_valid</obj_property>
+      <obj_property name="ObjectShortName">pred_valid</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/bht/pred_succ" type="logic">
+      <obj_property name="ElementShortName">pred_succ</obj_property>
+      <obj_property name="ObjectShortName">pred_succ</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/bht/pred_history_reg" type="array">
+      <obj_property name="ElementShortName">pred_history_reg[1:0]</obj_property>
+      <obj_property name="ObjectShortName">pred_history_reg[1:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/IF/bht_state_i" type="array">
+      <obj_property name="ElementShortName">bht_state_i[1:0]</obj_property>
+      <obj_property name="ObjectShortName">bht_state_i[1:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/tb/dut/IF/bht_branch_flag_i" type="logic">
       <obj_property name="ElementShortName">bht_branch_flag_i</obj_property>
@@ -79,13 +123,5 @@
    <wvobject fp_name="/tb/dut/IF/bht_branch_addr_i" type="array">
       <obj_property name="ElementShortName">bht_branch_addr_i[31:0]</obj_property>
       <obj_property name="ObjectShortName">bht_branch_addr_i[31:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/IF/bht_actual_o" type="logic">
-      <obj_property name="ElementShortName">bht_actual_o</obj_property>
-      <obj_property name="ObjectShortName">bht_actual_o</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/IF/bht_past_o" type="logic">
-      <obj_property name="ElementShortName">bht_past_o</obj_property>
-      <obj_property name="ObjectShortName">bht_past_o</obj_property>
    </wvobject>
 </wave_config>

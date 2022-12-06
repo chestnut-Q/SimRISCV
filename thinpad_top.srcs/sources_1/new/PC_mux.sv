@@ -31,7 +31,9 @@ module PC_mux(
             PC_o <= rst_addr_i;
             PC_past_reg <= rst_addr_i;
             bht_past_reg <= 1'b0;
-		end else if (stall_i) begin
+		end else if (csr_branch_flag_i) begin
+            PC_o <= csr_branch_addr_i;
+        end else if (stall_i) begin
             PC_o <= PC_o;
         end else begin
             if (csr_branch_flag_i) begin
@@ -45,8 +47,13 @@ module PC_mux(
                         PC_o <= branch_addr_i; // 预测没跳转但是实际跳转，回到跳转地址
                     end
                 end else begin
-                    if (jump_i || branch_i) begin
-                        PC_o <= branch_addr_i;
+                    if (jump_i || branch_i) 
+                    begin
+                        if (jump_i) begin
+                            PC_o <= branch_addr_i;
+                        end else if (branch_i) begin
+                            PC_o <= branch_addr_i;
+                        end
                     end else begin
                         if (bht_branch_flag_i) begin
                             if (bht_state_i == 2'b10 || bht_state_i == 2'b11) begin

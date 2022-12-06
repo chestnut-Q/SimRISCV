@@ -7,8 +7,10 @@ module BHT (
     input wire PC_src_i,
     input wire bht_past_i,
     input wire bht_actual_i,
-    input wire [31:0] exe_inst_i,
-    output wire [1:0] pred_state_o
+    input wire [31:0] id_inst_i,
+    output wire [1:0] pred_state_o,
+    output wire pred_valid_o,
+    output wire pred_succ_o
 );
 
 typedef enum logic [1:0] {
@@ -21,12 +23,15 @@ typedef enum logic [1:0] {
 state_t pred_history_reg;
 
 assign pred_state_o = pred_history_reg;
+// assign pred_state_o = strongly_taken;
 
 reg pred_valid;
 reg pred_succ;
 
-assign pred_valid = (exe_inst_i[6:0] == `OP_BTYPE);
+assign pred_valid = (id_inst_i[6:0] == `OP_BTYPE);
 assign pred_succ = ((bht_actual_i == 1'b1) && (bht_past_i == 1'b1)) || ((bht_actual_i == 1'b0) && (bht_past_i == 1'b0));
+assign pred_valid_o = pred_valid;
+assign pred_succ_o = pred_succ;
 
 always_ff @(posedge clk_i or posedge rst_i) begin
     if (rst_i) begin
