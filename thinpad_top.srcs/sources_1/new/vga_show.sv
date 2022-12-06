@@ -15,13 +15,13 @@ always_comb begin
     video_blue = 2'b11;
     enb = 1;
     addrb = 19'b0;
-    if(hdata >= 300 && hdata <= 499 && vdata >= 225 && vdata <= 374) begin
+    if(hdata >= 300 && hdata <= 499 && vdata >= 225 && vdata <= 375) begin
         // video_red = show[(vdata - 300) / 16 * 5 + (hdata - 360) / 16] * 7;
         // video_green = show[(vdata - 300) / 16 * 5 + (hdata - 360) / 16] * 7;
         // video_blue = show[(vdata - 300) / 16 * 5 + (hdata - 360) / 16] * 3;
         enb = 1;
-        addrb = (hdata - 300)  + (vdata - 225)  * 200  + 1;
-        if(addrb == 30000) 
+        addrb = (hdata - 300) / 2 + (vdata - 225) / 2 * 100  + 1;
+        if(addrb == 7500) 
             addrb = 0;
         video_blue = doutb[1:0];
         video_green = doutb[4:2];
