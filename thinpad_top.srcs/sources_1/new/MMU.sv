@@ -89,7 +89,8 @@ module MMU(
 
     assign translation = (priv_level_i == 2'b00) && (satp_i[31] == 1'b1);
     assign use_mmu = use_mmu_i & translation;
-    assign tlb_hit = tlb_valid && tlb_virtual == virtual_addr_i[31:12];
+    // assign tlb_hit = tlb_valid && tlb_virtual == virtual_addr_i[31:12];
+    assign tlb_hit = 1'b0;
     assign physical_addr_o = use_mmu ? (tlb_hit ? {tlb_physical, virtual_addr_i[11:0]} : physical_addr_reg) : virtual_addr_i;
     assign mmu_working_o = (use_mmu && (state != PHYSICAL && !tlb_hit));
 
