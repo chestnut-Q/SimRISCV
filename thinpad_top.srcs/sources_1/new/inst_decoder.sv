@@ -59,7 +59,13 @@ module inst_decoder (
                         endcase
                     end
                     `FUNCT3_SLL: alu_funct = `ALU_SLL;
-                    `FUNCT3_XOR: alu_funct = `ALU_XOR;
+                    `FUNCT3_XOR: begin
+                        case (funct7)
+                            `FUNCT7_XOR: alu_funct = `ALU_XOR;
+                            `FUNCT7_XPERM: alu_funct = `ALU_XPERM;
+                            default: alu_funct = `ALU_XOR;
+                        endcase
+                    end
                     `FUNCT3_SRL: begin
                         case (funct7)
                             `FUNCT7_SRL: alu_funct = `ALU_SRL;

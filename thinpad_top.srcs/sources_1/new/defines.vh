@@ -39,6 +39,8 @@
 `define FUNCT7_SUB 7'b0100000
 `define FUNCT7_SRL 7'b0000000
 `define FUNCT7_SRA 7'b0100000
+`define FUNCT7_XOR 7'b0000000
+`define FUNCT7_XPERM 7'b0010100
 
 `define TYPE_R 3'd0
 `define TYPE_I 3'd1
@@ -60,3 +62,4 @@
 `define ALU_ROL 4'd9
 `define ALU_JUMP 4'd10 // J 指令 PC+4
 `define ALU_LUI 4'd11
+`define ALU_XPERM 4'd12
